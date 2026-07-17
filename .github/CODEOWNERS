@@ -1,0 +1,8 @@
+# Default owners for the entire repository
+* @Arbitra-Lab/ai-agent-maintainers
+
+# Blockchain / Stellar specific
+/blockchain/ @Arbitra-Lab/blockchain-reviewers
+
+# API surface
+/api/ @Arbitra-Lab/api-reviewers
