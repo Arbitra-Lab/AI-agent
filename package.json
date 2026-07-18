@@ -1,0 +1,31 @@
+{
+  "name": "ai-agent",
+  "version": "1.0.0",
+  "description": "An intelligent AI agent powering the Arbitra on-chain arbitration and escrow protocol.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ayinkx1/AI-agent.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Ayinkx1/AI-agent/issues"
+  },
+  "homepage": "https://github.com/Ayinkx1/AI-agent#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
+    "typescript": "^7.0.2"
+  }
+}
