@@ -186,12 +186,17 @@ Show me similar arbitration precedents for this case.
 
 ---
 
+## Requirements
+
+- Node.js **>= 20**
+- npm
+
 ## Installation
 
 ```bash
-git clone https://github.com/arbitra/ai-agent.git
+git clone https://github.com/Arbitra-Lab/AI-agent.git
 
-cd ai-agent
+cd AI-agent
 
 npm install
 ```
@@ -199,6 +204,12 @@ npm install
 ---
 
 ## Environment Variables
+
+Copy `.env.example` to `.env` and fill in the values you need:
+
+```bash
+cp .env.example .env
+```
 
 ```env
 PORT=3000
@@ -218,11 +229,50 @@ STELLAR_SECRET_KEY=
 
 ---
 
+## Project Structure
+
+```
+src/
+  index.ts       # entrypoint (Express app)
+  config/        # env + app config
+  api/           # express routes, controllers, middleware
+  agent/         # conversation engine, context, memory, tools
+  services/      # escrow, dispute, contract intelligence, pricing
+  blockchain/     # stellar + soroban clients
+  db/            # schema, migrations, repositories
+  lib/           # shared utils (logger, errors)
+  types/         # shared types
+tests/
+```
+
+This project uses ESM (`"type": "module"`) with the `@/*` path alias
+mapped to `src/*` (e.g. `import { logger } from '@/lib/logger.js'`).
+
 ## Running Locally
 
 ```bash
-npm run dev
+npm run dev      # tsx watch — restarts on file changes
 ```
+
+## Building & Running in Production
+
+```bash
+npm run build    # compiles TypeScript to dist/ and resolves path aliases
+npm start         # runs the compiled server from dist/index.js
+```
+
+## Testing & Linting
+
+```bash
+npm test           # runs the test suite (node's built-in test runner)
+npm run lint       # eslint
+npm run lint:fix    # eslint --fix
+npm run format      # prettier --write
+npm run format:check # prettier --check
+```
+
+A pre-commit hook (Husky + lint-staged) runs lint/format automatically
+on staged files.
 
 ---
 
