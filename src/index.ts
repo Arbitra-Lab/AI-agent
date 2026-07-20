@@ -1,28 +1,39 @@
-import express from 'express';
-import { errorHandler } from './middleware/error-handler';
+/**
+ * Arbitra AI Agent
+ *
+ * Intelligent AI agent for on-chain arbitration and escrow on Stellar
+ */
 
-const app = express();
+import * as dotenv from 'dotenv';
 
-app.use(express.json());
+// Load environment variables
+dotenv.config();
 
-// Add a simple request ID middleware
-app.use((req, res, next) => {
-  (req as any).id = Math.random().toString(36).substring(7);
-  next();
-});
+// Export blockchain module
+export * from './blockchain';
 
-// Terminal Error Middleware
-app.use(errorHandler);
+// Health check and startup
+async function startup() {
+  console.log('🚀 Arbitra AI Agent');
+  console.log(`Network: ${process.env.STELLAR_NETWORK || 'testnet'}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 
-// Unhandled Promise Rejections and Uncaught Exceptions
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
-});
+  // Verify critical configuration
+  const network = process.env.STELLAR_NETWORK || 'testnet';
+  const contractIdKey = `ESCROW_CONTRACT_ID_${network.toUpperCase()}`;
 
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception thrown:', error);
-  process.exit(1);
-});
+  if (!process.env[contractIdKey]) {
+    console.warn(`⚠️  ${contractIdKey} not set`);
+    console.warn('   Blockchain operations will not work until configured');
+  }
 
-export default app;
+  console.log('✅ Agent ready');
+}
+
+// Only run startup if this is the main module
+if (require.main === module) {
+  startup().catch((error) => {
+    console.error('❌ Startup failed:', error);
+    process.exit(1);
+  });
+}

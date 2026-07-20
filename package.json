@@ -1,31 +1,32 @@
 {
-  "name": "ai-agent",
-  "version": "1.0.0",
-  "description": "An intelligent AI agent powering the Arbitra on-chain arbitration and escrow protocol.",
-  "main": "index.js",
+  "name": "arbitra-ai-agent",
+  "version": "0.1.0",
+  "description": "Arbitra AI Agent — on-chain arbitration and escrow protocol",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx db/migrate.ts",
+    "db:rollback": "tsx db/rollback.ts",
+    "db:seed": "tsx db/seeds/index.ts",
+    "db:studio": "drizzle-kit studio",
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "test": "jest"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Ayinkx1/AI-agent.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/Ayinkx1/AI-agent/issues"
-  },
-  "homepage": "https://github.com/Ayinkx1/AI-agent#readme",
   "dependencies": {
+    "drizzle-orm": "^0.38.0",
+    "pg": "^8.13.0",
+    "dotenv": "^16.4.0",
     "express": "^5.2.1"
   },
   "devDependencies": {
+    "@types/pg": "^8.11.0",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
+    "drizzle-kit": "^0.30.0",
     "jest": "^30.4.2",
     "ts-jest": "^29.4.11",
-    "typescript": "^5.9.3"
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
   }
 }
