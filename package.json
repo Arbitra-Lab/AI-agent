@@ -10,16 +10,22 @@
     "db:seed": "tsx db/seeds/index.ts",
     "db:studio": "drizzle-kit studio",
     "build": "tsc",
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "test": "jest"
   },
   "dependencies": {
     "drizzle-orm": "^0.38.0",
     "pg": "^8.13.0",
-    "dotenv": "^16.4.0"
+    "dotenv": "^16.4.0",
+    "express": "^5.2.1"
   },
   "devDependencies": {
     "@types/pg": "^8.11.0",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "drizzle-kit": "^0.30.0",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   }
