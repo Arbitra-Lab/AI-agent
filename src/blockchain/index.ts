@@ -21,6 +21,9 @@ export {
 // Clients
 export { EscrowContractClient } from './clients/escrow';
 
+// Transaction verification & escrow state reconciliation
+export * from './verification';
+
 // Utilities
 export {
   stringToBytes32,
