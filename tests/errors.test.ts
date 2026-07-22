@@ -92,4 +92,34 @@ describe('Error Handler Middleware', () => {
     
     process.env.NODE_ENV = originalEnv;
   });
+
+  it('should respect a library-provided status code for non-AppError errors', () => {
+    const err = new Error('request entity too large') as Error & { status: number };
+    err.status = 413;
+
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+
+    errorHandler(err, mockRequest as Request, mockResponse as Response, mockNext);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(413);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'An unexpected error occurred',
+        requestId: 'test-req-id',
+      }
+    });
+
+    process.env.NODE_ENV = originalEnv;
+  });
+
+  it('should ignore an out-of-range status and fall back to 500', () => {
+    const err = new Error('weird error') as Error & { status: number };
+    err.status = 999;
+
+    errorHandler(err, mockRequest as Request, mockResponse as Response, mockNext);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(500);
+  });
 });
