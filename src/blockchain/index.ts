@@ -24,6 +24,23 @@ export { EscrowContractClient } from './clients/escrow';
 // Transaction verification & escrow state reconciliation
 export * from './verification';
 
+// Stellar Horizon client: accounts, fees, transaction submission
+export {
+  StellarClient,
+  StellarClientOptions,
+  StellarConfig,
+  StellarConfigError,
+  StellarHorizonError,
+  StellarNetwork,
+  HorizonResultCodes,
+  HorizonServerLike,
+  AccountBalance,
+  SubmitResult,
+  loadStellarConfig,
+  mapHorizonError,
+  assertHasTimebounds,
+} from './stellar';
+
 // Utilities
 export {
   stringToBytes32,
