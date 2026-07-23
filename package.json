@@ -14,11 +14,14 @@
     "test": "jest"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.113.0",
     "@stellar/stellar-sdk": "^16.0.1",
     "dotenv": "^16.4.0",
     "drizzle-orm": "^0.38.0",
     "express": "^5.2.1",
-    "pg": "^8.13.0"
+    "openai": "^6.48.0",
+    "pg": "^8.13.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
