@@ -380,4 +380,3 @@ MIT License
 Building open trust infrastructure for two-party agreements using AI and Stellar.
 
 **Generic escrow. Case-agnostic arbitration. Built for any vertical.**
-\n\n[![CI](https://github.com/Sam-Rytech/AI-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Sam-Rytech/AI-agent/actions/workflows/ci.yml)
