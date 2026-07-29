@@ -48,6 +48,12 @@ export class RateLimitError extends AppError {
   }
 }
 
+export class ServiceUnavailableError extends AppError {
+  constructor(message: string = 'Service temporarily unavailable') {
+    super(message, 503, 'SERVICE_UNAVAILABLE_ERROR', true);
+  }
+}
+
 export class LLMProviderError extends AppError {
   constructor(message: string = 'LLM provider error') {
     super(message, 502, 'LLM_PROVIDER_ERROR', true);
