@@ -5,11 +5,15 @@
  */
 
 import * as dotenv from 'dotenv';
+import { PromptManager } from './agent/prompts';
 import { Server } from 'http';
 
 // Load environment variables
 dotenv.config();
 
+// Export modules
+export * from './blockchain';
+export * from './agent';
 import { createApp } from './app';
 import { pool } from './lib/db';
 import { closeRedis } from './lib/redis';
@@ -25,6 +29,10 @@ async function startup() {
   console.log('🚀 Arbitra AI Agent');
   console.log(`Network: ${process.env.STELLAR_NETWORK || 'testnet'}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+
+  // Initialize prompt manager
+  PromptManager.initialize();
+  console.log(`✅ Prompts initialized (v${PromptManager.getCurrentSystemPromptVersion()})`);
 
   // Verify critical configuration
   const network = process.env.STELLAR_NETWORK || 'testnet';
