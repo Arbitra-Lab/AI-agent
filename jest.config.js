@@ -8,8 +8,11 @@ module.exports = {
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: { allowJs: true } }],
   },
+  // pnpm nests real packages under node_modules/.pnpm/<name>@<version>/node_modules/<name>,
+  // so the exempted-package check has to allow an optional .pnpm hop before matching,
+  // or it fires (and wrongly ignores the file) on the outer node_modules/.pnpm segment.
   transformIgnorePatterns: [
-    'node_modules[\\\\/](?!(@noble|uint8array-extras)[\\\\/])',
+    'node_modules[\\\\/](?!(\\.pnpm[\\\\/])?(@noble[\\\\/+]|uint8array-extras))',
   ],
   collectCoverageFrom: [
     'src/**/*.ts',
