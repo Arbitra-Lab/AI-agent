@@ -16,20 +16,22 @@ import { ChainEscrowStatus } from '../verification/types';
 
 const silentLog = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
 
-function chainReporting(statuses: Record<string, ChainEscrowStatus>): EscrowChainReader {
+function chainReporting(
+  statuses: Record<string, ChainEscrowStatus>,
+): EscrowChainReader {
   return {
-    async getEscrow(escrowId: string) {
+    getEscrow(escrowId: string) {
       const status = statuses[escrowId];
       if (!status) throw new Error(`Escrow ${escrowId} not found on chain`);
-      return { status };
+      return Promise.resolve({ status });
     },
   };
 }
 
 function fixedLedger(sequence: number) {
   return {
-    async getLatestLedger() {
-      return { sequence, closedAt: '2026-07-21T10:00:00Z' };
+    getLatestLedger() {
+      return Promise.resolve({ sequence, closedAt: '2026-07-21T10:00:00Z' });
     },
   };
 }
@@ -38,7 +40,9 @@ beforeEach(() => jest.clearAllMocks());
 
 describe('mapChainStatusToLocalState', () => {
   it('maps every contract status to a local state', () => {
-    expect(mapChainStatusToLocalState('PENDING_FUNDING')).toBe('pending_deposit');
+    expect(mapChainStatusToLocalState('PENDING_FUNDING')).toBe(
+      'pending_deposit',
+    );
     expect(mapChainStatusToLocalState('FUNDED')).toBe('funded');
     expect(mapChainStatusToLocalState('DISPUTED')).toBe('disputed');
     expect(mapChainStatusToLocalState('RELEASED')).toBe('released');
@@ -59,7 +63,11 @@ describe('EscrowReconciler', () => {
       (await repo.listTracked())[0],
     );
 
-    expect(result).toMatchObject({ changed: true, from: 'funded', to: 'released' });
+    expect(result).toMatchObject({
+      changed: true,
+      from: 'funded',
+      to: 'released',
+    });
     expect(repo.getById('esc-1')?.state).toBe('released');
     // Normal forward progress is not a divergence bug
     expect(result.divergedAheadOfChain).toBe(false);
@@ -75,8 +83,12 @@ describe('EscrowReconciler', () => {
       silentLog,
     );
 
-    const first = await reconciler.reconcileEscrow((await repo.listTracked())[0]);
-    const second = await reconciler.reconcileEscrow((await repo.listTracked())[0]);
+    const first = await reconciler.reconcileEscrow(
+      (await repo.listTracked())[0],
+    );
+    const second = await reconciler.reconcileEscrow(
+      (await repo.listTracked())[0],
+    );
 
     expect(first.changed).toBe(true);
     expect(second.changed).toBe(false);
@@ -94,7 +106,9 @@ describe('EscrowReconciler', () => {
       silentLog,
     );
 
-    const result = await reconciler.reconcileEscrow((await repo.listTracked())[0]);
+    const result = await reconciler.reconcileEscrow(
+      (await repo.listTracked())[0],
+    );
 
     expect(result.divergedAheadOfChain).toBe(true);
     expect(repo.getById('esc-1')?.state).toBe('funded');
@@ -107,7 +121,11 @@ describe('EscrowReconciler', () => {
 describe('ReconciliationJob', () => {
   it('reconciles tracked escrows and persists the ledger cursor', async () => {
     const repo = new InMemoryEscrowStateRepository();
-    repo.seed({ id: 'esc-1', chainEscrowId: 'chain-1', state: 'pending_deposit' });
+    repo.seed({
+      id: 'esc-1',
+      chainEscrowId: 'chain-1',
+      state: 'pending_deposit',
+    });
     repo.seed({ id: 'esc-2', chainEscrowId: 'chain-2', state: 'funded' });
     const cursors = new InMemoryCursorStore();
     const reconciler = new EscrowReconciler(
@@ -115,25 +133,44 @@ describe('ReconciliationJob', () => {
       repo,
       silentLog,
     );
-    const job = new ReconciliationJob(fixedLedger(500), reconciler, repo, cursors);
+    const job = new ReconciliationJob(
+      fixedLedger(500),
+      reconciler,
+      repo,
+      cursors,
+    );
 
     const summary = await job.runOnce();
 
-    expect(summary).toMatchObject({ checked: 2, updated: 1, ledger: 500, errors: [] });
+    expect(summary).toMatchObject({
+      checked: 2,
+      updated: 1,
+      ledger: 500,
+      errors: [],
+    });
     expect(repo.getById('esc-1')?.state).toBe('funded');
     expect(await cursors.get('escrow-reconciliation')).toBe('500');
   });
 
   it('skips an already-processed ledger (duplicate delivery is a no-op)', async () => {
     const repo = new InMemoryEscrowStateRepository();
-    repo.seed({ id: 'esc-1', chainEscrowId: 'chain-1', state: 'pending_deposit' });
+    repo.seed({
+      id: 'esc-1',
+      chainEscrowId: 'chain-1',
+      state: 'pending_deposit',
+    });
     const cursors = new InMemoryCursorStore();
     const reconciler = new EscrowReconciler(
       chainReporting({ 'chain-1': 'FUNDED' }),
       repo,
       silentLog,
     );
-    const job = new ReconciliationJob(fixedLedger(500), reconciler, repo, cursors);
+    const job = new ReconciliationJob(
+      fixedLedger(500),
+      reconciler,
+      repo,
+      cursors,
+    );
 
     await job.runOnce();
     const second = await job.runOnce();
@@ -152,16 +189,31 @@ describe('ReconciliationJob', () => {
       silentLog,
     );
 
-    const firstProcess = new ReconciliationJob(fixedLedger(500), reconciler, repo, cursors);
+    const firstProcess = new ReconciliationJob(
+      fixedLedger(500),
+      reconciler,
+      repo,
+      cursors,
+    );
     await firstProcess.runOnce();
 
     // Simulate a restart: a brand-new job instance, same cursor store.
-    const restarted = new ReconciliationJob(fixedLedger(500), reconciler, repo, cursors);
+    const restarted = new ReconciliationJob(
+      fixedLedger(500),
+      reconciler,
+      repo,
+      cursors,
+    );
     const afterRestart = await restarted.runOnce();
     expect(afterRestart.skippedAlreadyProcessed).toBe(true);
 
     // A newer ledger is processed normally.
-    const laterLedger = new ReconciliationJob(fixedLedger(501), reconciler, repo, cursors);
+    const laterLedger = new ReconciliationJob(
+      fixedLedger(501),
+      reconciler,
+      repo,
+      cursors,
+    );
     const next = await laterLedger.runOnce();
     expect(next.skippedAlreadyProcessed).toBe(false);
     expect(await cursors.get('escrow-reconciliation')).toBe('501');
@@ -169,15 +221,28 @@ describe('ReconciliationJob', () => {
 
   it('does not advance the cursor when an escrow fails, so the run is retried', async () => {
     const repo = new InMemoryEscrowStateRepository();
-    repo.seed({ id: 'esc-ok', chainEscrowId: 'chain-ok', state: 'pending_deposit' });
-    repo.seed({ id: 'esc-bad', chainEscrowId: 'chain-missing', state: 'funded' });
+    repo.seed({
+      id: 'esc-ok',
+      chainEscrowId: 'chain-ok',
+      state: 'pending_deposit',
+    });
+    repo.seed({
+      id: 'esc-bad',
+      chainEscrowId: 'chain-missing',
+      state: 'funded',
+    });
     const cursors = new InMemoryCursorStore();
     const reconciler = new EscrowReconciler(
       chainReporting({ 'chain-ok': 'FUNDED' }), // chain-missing throws
       repo,
       silentLog,
     );
-    const job = new ReconciliationJob(fixedLedger(500), reconciler, repo, cursors);
+    const job = new ReconciliationJob(
+      fixedLedger(500),
+      reconciler,
+      repo,
+      cursors,
+    );
 
     const summary = await job.runOnce();
 
@@ -196,11 +261,21 @@ describe('ReconciliationJob', () => {
   it('supports independent cursors per job name', async () => {
     const repo = new InMemoryEscrowStateRepository();
     const cursors = new InMemoryCursorStore();
-    const reconciler = new EscrowReconciler(chainReporting({}), repo, silentLog);
+    const reconciler = new EscrowReconciler(
+      chainReporting({}),
+      repo,
+      silentLog,
+    );
 
-    const jobA = new ReconciliationJob(fixedLedger(100), reconciler, repo, cursors, {
-      cursorName: 'job-a',
-    });
+    const jobA = new ReconciliationJob(
+      fixedLedger(100),
+      reconciler,
+      repo,
+      cursors,
+      {
+        cursorName: 'job-a',
+      },
+    );
     await jobA.runOnce();
 
     expect(await cursors.get('job-a')).toBe('100');

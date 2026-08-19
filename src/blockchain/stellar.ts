@@ -59,24 +59,37 @@ const DEFAULT_HORIZON: Record<StellarNetwork, string> = {
   mainnet: 'https://horizon.stellar.org',
 };
 
-function parsePositiveInt(env: NodeJS.ProcessEnv, key: string, fallback: number): number {
+function parsePositiveInt(
+  env: NodeJS.ProcessEnv,
+  key: string,
+  fallback: number,
+): number {
   const raw = env[key];
   if (raw === undefined || raw === '') return fallback;
   const value = Number(raw);
   if (!Number.isInteger(value) || value <= 0) {
-    throw new StellarConfigError(`${key} must be a positive integer, got '${raw}'`);
+    throw new StellarConfigError(
+      `${key} must be a positive integer, got '${raw}'`,
+    );
   }
   return value;
 }
 
-export function loadStellarConfig(env: NodeJS.ProcessEnv = process.env): StellarConfig {
+export function loadStellarConfig(
+  env: NodeJS.ProcessEnv = process.env,
+): StellarConfig {
   const rawNetwork = (env.STELLAR_NETWORK ?? 'testnet').toLowerCase();
-  if (rawNetwork !== 'testnet' && rawNetwork !== 'mainnet' && rawNetwork !== 'public') {
+  if (
+    rawNetwork !== 'testnet' &&
+    rawNetwork !== 'mainnet' &&
+    rawNetwork !== 'public'
+  ) {
     throw new StellarConfigError(
       `STELLAR_NETWORK must be 'testnet' or 'mainnet', got '${rawNetwork}'`,
     );
   }
-  const network: StellarNetwork = rawNetwork === 'public' ? 'mainnet' : rawNetwork;
+  const network: StellarNetwork =
+    rawNetwork === 'public' ? 'mainnet' : rawNetwork;
 
   if (network === 'mainnet' && env.STELLAR_ALLOW_MAINNET !== 'true') {
     throw new StellarConfigError(
@@ -87,8 +100,12 @@ export function loadStellarConfig(env: NodeJS.ProcessEnv = process.env): Stellar
 
   return {
     network,
-    horizonUrl: (env.STELLAR_HORIZON_URL ?? DEFAULT_HORIZON[network]).replace(/\/+$/, ''),
-    networkPassphrase: network === 'mainnet' ? Networks.PUBLIC : Networks.TESTNET,
+    horizonUrl: (env.STELLAR_HORIZON_URL ?? DEFAULT_HORIZON[network]).replace(
+      /\/+$/,
+      '',
+    ),
+    networkPassphrase:
+      network === 'mainnet' ? Networks.PUBLIC : Networks.TESTNET,
     maxFeeStroops: parsePositiveInt(env, 'STELLAR_MAX_FEE_STROOPS', 10_000),
     baseFeeStroops: parsePositiveInt(env, 'STELLAR_BASE_FEE_STROOPS', 100),
     txTimeoutSeconds: parsePositiveInt(env, 'STELLAR_TX_TIMEOUT_SECONDS', 180),
@@ -139,15 +156,20 @@ const RETRYABLE_HTTP_STATUSES = new Set([429, 503, 504]);
 function isNetworkTimeout(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
   const code = (error as { code?: string }).code;
-  return code === 'ECONNABORTED' || code === 'ETIMEDOUT' || /timeout/i.test(error.message);
+  return (
+    code === 'ECONNABORTED' ||
+    code === 'ETIMEDOUT' ||
+    /timeout/i.test(error.message)
+  );
 }
 
 /** Maps any Horizon/SDK/network error to a StellarHorizonError. */
 export function mapHorizonError(error: unknown): StellarHorizonError {
   if (error instanceof StellarHorizonError) return error;
 
-  const response = (error as { response?: { status?: number; data?: HorizonErrorData } })
-    .response;
+  const response = (
+    error as { response?: { status?: number; data?: HorizonErrorData } }
+  ).response;
   const data = response?.data;
   const httpStatus = response?.status ?? data?.status;
   const resultCodes = data?.extras?.result_codes;
@@ -157,11 +179,17 @@ export function mapHorizonError(error: unknown): StellarHorizonError {
     isNetworkTimeout(error);
 
   const parts: string[] = [];
-  parts.push(data?.title ?? (error instanceof Error ? error.message : 'Horizon request failed'));
+  parts.push(
+    data?.title ??
+      (error instanceof Error ? error.message : 'Horizon request failed'),
+  );
   if (data?.detail) parts.push(data.detail);
-  if (resultCodes?.transaction) parts.push(`result_codes.transaction=${resultCodes.transaction}`);
+  if (resultCodes?.transaction)
+    parts.push(`result_codes.transaction=${resultCodes.transaction}`);
   if (resultCodes?.operations?.length) {
-    parts.push(`result_codes.operations=[${resultCodes.operations.join(', ')}]`);
+    parts.push(
+      `result_codes.operations=[${resultCodes.operations.join(', ')}]`,
+    );
   }
 
   return new StellarHorizonError(parts.join(' — '), {
@@ -199,7 +227,9 @@ export interface HorizonServerLike {
     tx: Transaction | FeeBumpTransaction,
   ): Promise<Horizon.HorizonApi.SubmitTransactionResponse>;
   transactions(): {
-    transaction(hash: string): { call(): Promise<Horizon.ServerApi.TransactionRecord> };
+    transaction(hash: string): {
+      call(): Promise<Horizon.ServerApi.TransactionRecord>;
+    };
   };
 }
 
@@ -241,7 +271,9 @@ export class StellarClient {
         this.keypair = Keypair.fromSecret(secret);
       } catch {
         // Deliberately does not echo the value.
-        throw new StellarConfigError('STELLAR_SECRET_KEY is not a valid Stellar secret key');
+        throw new StellarConfigError(
+          'STELLAR_SECRET_KEY is not a valid Stellar secret key',
+        );
       }
     } else {
       this.keypair = null;
@@ -294,12 +326,13 @@ export class StellarClient {
   async estimateFee(): Promise<number> {
     try {
       const stats = await this.server.feeStats();
-      const baseFee = Number(stats.last_ledger_base_fee) || this.config.baseFeeStroops;
+      const baseFee =
+        Number(stats.last_ledger_base_fee) || this.config.baseFeeStroops;
       const p50 = Number(stats.fee_charged?.p50) || baseFee;
       return Math.min(Math.max(baseFee, p50), this.config.maxFeeStroops);
     } catch (error) {
       logger.warn(
-        `[stellar] fee stats unavailable (${error instanceof Error ? error.message : error}); ` +
+        `[stellar] fee stats unavailable (${error instanceof Error ? error.message : String(error)}); ` +
           `falling back to base fee ${this.config.baseFeeStroops}`,
       );
       return Math.min(this.config.baseFeeStroops, this.config.maxFeeStroops);
@@ -343,14 +376,20 @@ export class StellarClient {
    * distinguish "our earlier attempt actually landed" (success) from a
    * genuine sequence error (failure with result_codes preserved).
    */
-  async submitTransaction(tx: Transaction | FeeBumpTransaction): Promise<SubmitResult> {
+  async submitTransaction(
+    tx: Transaction | FeeBumpTransaction,
+  ): Promise<SubmitResult> {
     assertHasTimebounds(tx);
     const hash = tx.hash().toString('hex');
 
     for (let attempt = 0; ; attempt++) {
       try {
         const response = await this.server.submitTransaction(tx);
-        return { hash: response.hash, ledger: response.ledger, successful: true };
+        return {
+          hash: response.hash,
+          ledger: response.ledger,
+          successful: true,
+        };
       } catch (error) {
         const mapped = mapHorizonError(error);
 
@@ -404,7 +443,9 @@ export class StellarClient {
  * Rejects transactions without an upper timebound. For fee-bump
  * transactions the timebounds live on the inner transaction.
  */
-export function assertHasTimebounds(tx: Transaction | FeeBumpTransaction): void {
+export function assertHasTimebounds(
+  tx: Transaction | FeeBumpTransaction,
+): void {
   const inner = tx instanceof FeeBumpTransaction ? tx.innerTransaction : tx;
   const maxTime = inner.timeBounds?.maxTime;
   if (!maxTime || maxTime === '0') {

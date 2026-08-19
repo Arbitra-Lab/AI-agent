@@ -83,16 +83,12 @@
         "users_stellar_address_unique": {
           "name": "users_stellar_address_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "stellar_address"
-          ]
+          "columns": ["stellar_address"]
         },
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -176,12 +172,8 @@
           "name": "agreements_party_a_users_id_fk",
           "tableFrom": "agreements",
           "tableTo": "users",
-          "columnsFrom": [
-            "party_a"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["party_a"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -189,12 +181,8 @@
           "name": "agreements_party_b_users_id_fk",
           "tableFrom": "agreements",
           "tableTo": "users",
-          "columnsFrom": [
-            "party_b"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["party_b"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -305,12 +293,8 @@
           "name": "escrows_agreement_id_agreements_id_fk",
           "tableFrom": "escrows",
           "tableTo": "agreements",
-          "columnsFrom": [
-            "agreement_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agreement_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -318,12 +302,8 @@
           "name": "escrows_depositor_users_id_fk",
           "tableFrom": "escrows",
           "tableTo": "users",
-          "columnsFrom": [
-            "depositor"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["depositor"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -331,12 +311,8 @@
           "name": "escrows_beneficiary_users_id_fk",
           "tableFrom": "escrows",
           "tableTo": "users",
-          "columnsFrom": [
-            "beneficiary"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["beneficiary"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -403,12 +379,8 @@
           "name": "conversations_user_id_users_id_fk",
           "tableFrom": "conversations",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -482,12 +454,8 @@
           "name": "messages_conversation_id_conversations_id_fk",
           "tableFrom": "messages",
           "tableTo": "conversations",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -600,12 +568,8 @@
           "name": "listings_owner_id_users_id_fk",
           "tableFrom": "listings",
           "tableTo": "users",
-          "columnsFrom": [
-            "owner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -653,12 +617,7 @@
     "public.verification_status": {
       "name": "verification_status",
       "schema": "public",
-      "values": [
-        "unverified",
-        "pending",
-        "verified",
-        "rejected"
-      ]
+      "values": ["unverified", "pending", "verified", "rejected"]
     },
     "public.agreement_state": {
       "name": "agreement_state",
@@ -688,22 +647,12 @@
     "public.message_role": {
       "name": "message_role",
       "schema": "public",
-      "values": [
-        "user",
-        "assistant",
-        "system",
-        "tool"
-      ]
+      "values": ["user", "assistant", "system", "tool"]
     },
     "public.listing_status": {
       "name": "listing_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "active",
-        "rented",
-        "inactive"
-      ]
+      "values": ["draft", "active", "rented", "inactive"]
     }
   },
   "schemas": {},

@@ -61,6 +61,7 @@ npm run generate:escrow-bindings
 ```
 
 The script does:
+
 1. Locates the contract WASM (from sibling `Arbitra/contract` repo)
 2. Generates TypeScript bindings
 3. Creates type-safe function stubs
@@ -97,7 +98,9 @@ console.log(`Escrow ${escrowId}: ${escrow.status}`);
 
 // Check approval count
 const approvals = await client.getApprovalCount(escrowId);
-console.log(`Approvals: ${approvals.currentApprovals}/${approvals.totalApprovalsNeeded}`);
+console.log(
+  `Approvals: ${approvals.currentApprovals}/${approvals.totalApprovalsNeeded}`,
+);
 
 // Get release history
 const history = await client.getReleaseHistory(escrowId);
@@ -114,13 +117,13 @@ import { Keypair } from 'stellar-sdk';
 const signingKey = Keypair.fromSecret(process.env.STELLAR_SECRET_KEY!);
 
 const result = await client.create({
-  party1: 'G...',  // Stellar address
-  party2: 'G...',  // Stellar address
-  amount: BigInt(1000000000),  // Always use bigint!
+  party1: 'G...', // Stellar address
+  party2: 'G...', // Stellar address
+  amount: BigInt(1000000000), // Always use bigint!
   assetCode: 'USDC',
-  assetIssuer: 'G...',  // Stellar address of issuer
-  timeoutSeconds: 86400,  // 1 day
-  arbiter: 'G...',  // Optional
+  assetIssuer: 'G...', // Stellar address of issuer
+  timeoutSeconds: 86400, // 1 day
+  arbiter: 'G...', // Optional
   signingKey,
 });
 
@@ -151,7 +154,7 @@ await client.approveRelease({
 // Partial release
 await client.approvePartialRelease({
   escrowId,
-  amount: BigInt(500000000),  // Half the amount
+  amount: BigInt(500000000), // Half the amount
   signingKey,
 });
 ```
@@ -230,10 +233,10 @@ import {
 const amount = validateAmount('1000000000');
 
 // Format for display (default: 7 decimals)
-const display = formatAmount(BigInt(1234567890), 7);  // "123.456789"
+const display = formatAmount(BigInt(1234567890), 7); // "123.456789"
 
 // Parse from display string
-const parsed = parseAmount('123.456789', 7);  // BigInt(1234567890)
+const parsed = parseAmount('123.456789', 7); // BigInt(1234567890)
 ```
 
 ### Address Validation

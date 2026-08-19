@@ -1,4 +1,8 @@
-import { CursorStore, EscrowStateRepository, LocalEscrowRecord } from './reconciler';
+import {
+  CursorStore,
+  EscrowStateRepository,
+  LocalEscrowRecord,
+} from './reconciler';
 import { LocalEscrowState } from './types';
 
 /**
@@ -9,12 +13,13 @@ import { LocalEscrowState } from './types';
 export class InMemoryCursorStore implements CursorStore {
   private cursors = new Map<string, string>();
 
-  async get(name: string): Promise<string | null> {
-    return this.cursors.get(name) ?? null;
+  get(name: string): Promise<string | null> {
+    return Promise.resolve(this.cursors.get(name) ?? null);
   }
 
-  async set(name: string, cursor: string): Promise<void> {
+  set(name: string, cursor: string): Promise<void> {
     this.cursors.set(name, cursor);
+    return Promise.resolve();
   }
 }
 
@@ -31,16 +36,17 @@ export class InMemoryEscrowStateRepository implements EscrowStateRepository {
     return this.records.get(id);
   }
 
-  async listTracked(): Promise<LocalEscrowRecord[]> {
-    return [...this.records.values()].map((r) => ({ ...r }));
+  listTracked(): Promise<LocalEscrowRecord[]> {
+    return Promise.resolve([...this.records.values()].map((r) => ({ ...r })));
   }
 
-  async updateState(id: string, state: LocalEscrowState): Promise<void> {
+  updateState(id: string, state: LocalEscrowState): Promise<void> {
     const record = this.records.get(id);
     if (!record) {
       throw new Error(`Escrow ${id} not found`);
     }
     record.state = state;
     this.updateCalls.push({ id, state });
+    return Promise.resolve();
   }
 }

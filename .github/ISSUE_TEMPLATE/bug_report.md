@@ -1,9 +1,9 @@
 ---
 name: 🐛 Bug Report
 about: Report a bug to help us improve
-title: "[BUG] Brief description of the issue"
+title: '[BUG] Brief description of the issue'
 labels: bug
-assignees: ""
+assignees: ''
 ---
 
 ## 📝 Description

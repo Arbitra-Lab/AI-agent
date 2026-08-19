@@ -102,7 +102,9 @@ export class TransactionVerifier {
   }
 }
 
-function extractResultCodes(record: HorizonTransactionRecord): TransactionResultCodes {
+function extractResultCodes(
+  record: HorizonTransactionRecord,
+): TransactionResultCodes {
   if (record.result_codes) {
     return record.result_codes;
   }

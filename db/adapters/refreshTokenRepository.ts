@@ -1,12 +1,20 @@
-import { eq } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { refreshTokens } from "../schema";
-import type { RefreshTokenRepository, RefreshTokenRecord } from "../../src/auth/refreshTokenRepository";
+import { eq } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { refreshTokens } from '../schema';
+import type {
+  RefreshTokenRepository,
+  RefreshTokenRecord,
+} from '../../src/auth/refreshTokenRepository';
 
 export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
   constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
 
-  async create(record: { id: string; userId: string; tokenHash: string; expiresAt: Date }): Promise<void> {
+  async create(record: {
+    id: string;
+    userId: string;
+    tokenHash: string;
+    expiresAt: Date;
+  }): Promise<void> {
     await this.db.insert(refreshTokens).values({
       id: record.id,
       userId: record.userId,
@@ -37,7 +45,10 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
   async revoke(id: string, replacedByTokenId?: string): Promise<void> {
     await this.db
       .update(refreshTokens)
-      .set({ revokedAt: new Date(), ...(replacedByTokenId ? { replacedByTokenId } : {}) })
+      .set({
+        revokedAt: new Date(),
+        ...(replacedByTokenId ? { replacedByTokenId } : {}),
+      })
       .where(eq(refreshTokens.id, id));
   }
 

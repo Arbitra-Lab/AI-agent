@@ -1,7 +1,9 @@
-import { 
-  ValidationError, AuthError, ForbiddenError, NotFoundError, 
-  ConflictError, RateLimitError, LLMProviderError, 
-  BlockchainError, InternalError 
+import {
+  ValidationError,
+  AuthError,
+  NotFoundError,
+  RateLimitError,
+  BlockchainError,
 } from '../src/lib/errors';
 import { errorHandler } from '../src/middleware/error-handler';
 import { Request, Response, NextFunction } from 'express';
@@ -43,7 +45,7 @@ describe('Error Handler Middleware', () => {
       json: jest.fn(),
     };
     mockNext = jest.fn();
-    
+
     // Silence console.error for tests
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -54,53 +56,70 @@ describe('Error Handler Middleware', () => {
 
   it('should format AppError correctly', () => {
     const err = new NotFoundError('User not found');
-    
+
     // Simulate production environment
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
-    
-    errorHandler(err, mockRequest as Request, mockResponse as Response, mockNext);
-    
+
+    errorHandler(
+      err,
+      mockRequest as Request,
+      mockResponse as Response,
+      mockNext,
+    );
+
     expect(mockResponse.status).toHaveBeenCalledWith(404);
     expect(mockResponse.json).toHaveBeenCalledWith({
       error: {
         code: 'NOT_FOUND_ERROR',
         message: 'User not found',
         requestId: 'test-req-id',
-      }
+      },
     });
-    
+
     process.env.NODE_ENV = originalEnv;
   });
 
   it('should format generic error as 500 INTERNAL_ERROR', () => {
     const err = new Error('Some unexpected failure');
-    
+
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
-    
-    errorHandler(err, mockRequest as Request, mockResponse as Response, mockNext);
-    
+
+    errorHandler(
+      err,
+      mockRequest as Request,
+      mockResponse as Response,
+      mockNext,
+    );
+
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith({
       error: {
         code: 'INTERNAL_ERROR',
         message: 'An unexpected error occurred',
         requestId: 'test-req-id',
-      }
+      },
     });
-    
+
     process.env.NODE_ENV = originalEnv;
   });
 
   it('should respect a library-provided status code for non-AppError errors', () => {
-    const err = new Error('request entity too large') as Error & { status: number };
+    const err = new Error('request entity too large') as Error & {
+      status: number;
+    };
     err.status = 413;
 
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
 
-    errorHandler(err, mockRequest as Request, mockResponse as Response, mockNext);
+    errorHandler(
+      err,
+      mockRequest as Request,
+      mockResponse as Response,
+      mockNext,
+    );
 
     expect(mockResponse.status).toHaveBeenCalledWith(413);
     expect(mockResponse.json).toHaveBeenCalledWith({
@@ -108,7 +127,7 @@ describe('Error Handler Middleware', () => {
         code: 'INTERNAL_ERROR',
         message: 'An unexpected error occurred',
         requestId: 'test-req-id',
-      }
+      },
     });
 
     process.env.NODE_ENV = originalEnv;
@@ -118,7 +137,12 @@ describe('Error Handler Middleware', () => {
     const err = new Error('weird error') as Error & { status: number };
     err.status = 999;
 
-    errorHandler(err, mockRequest as Request, mockResponse as Response, mockNext);
+    errorHandler(
+      err,
+      mockRequest as Request,
+      mockResponse as Response,
+      mockNext,
+    );
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
   });

@@ -39,7 +39,7 @@ export interface ConfirmationToken {
 export class EscrowService {
   private static escrows = new Map<string, Escrow>();
   private static tokens = new Map<string, ConfirmationToken>();
-  
+
   // Expiration duration (5 minutes)
   private static TOKEN_LIFETIME_MS = 5 * 60 * 1000;
 
@@ -72,11 +72,17 @@ export class EscrowService {
     receiver: string,
     amountStr: string,
     assetCode: string,
-    assetIssuer: string
-  ): { status: 'pending_confirmation'; proposal: UnsignedProposal; confirmationToken: string } {
+    assetIssuer: string,
+  ): {
+    status: 'pending_confirmation';
+    proposal: UnsignedProposal;
+    confirmationToken: string;
+  } {
     // 1. Caller authorization checked against agreement parties
     if (caller !== sender && caller !== receiver) {
-      throw new Error(`Unauthorized: Caller '${caller}' must be one of the escrow parties (sender or receiver).`);
+      throw new Error(
+        `Unauthorized: Caller '${caller}' must be one of the escrow parties (sender or receiver).`,
+      );
     }
 
     // 2. Asset code and issuer required explicitly
@@ -90,7 +96,8 @@ export class EscrowService {
     // 3. Amounts parsed strictly as bigint
     const parsedAmount = parseBigIntAmount(amountStr);
 
-    const proposalId = 'pending_create_' + this.generateTokenString().substring(0, 8);
+    const proposalId =
+      'pending_create_' + this.generateTokenString().substring(0, 8);
     const proposal: UnsignedProposal = {
       type: 'create_escrow',
       sequence: Math.floor(Math.random() * 1000000).toString(),
@@ -116,7 +123,13 @@ export class EscrowService {
       token: tokenStr,
       action: 'create_escrow',
       caller,
-      args: { sender, receiver, amount: parsedAmount.toString(), assetCode, assetIssuer },
+      args: {
+        sender,
+        receiver,
+        amount: parsedAmount.toString(),
+        assetCode,
+        assetIssuer,
+      },
       expiresAt: new Date(Date.now() + this.TOKEN_LIFETIME_MS),
       used: false,
     };
@@ -159,8 +172,12 @@ export class EscrowService {
   public static prepareApproveRelease(
     caller: string,
     escrowId: string,
-    amountStr: string
-  ): { status: 'pending_confirmation'; proposal: UnsignedProposal; confirmationToken: string } {
+    amountStr: string,
+  ): {
+    status: 'pending_confirmation';
+    proposal: UnsignedProposal;
+    confirmationToken: string;
+  } {
     const escrow = this.escrows.get(escrowId);
     if (!escrow) {
       throw new Error(`Escrow with ID '${escrowId}' not found.`);
@@ -168,26 +185,32 @@ export class EscrowService {
 
     // 1. Caller authorization checked against agreement parties
     if (caller !== escrow.sender && caller !== escrow.receiver) {
-      throw new Error(`Unauthorized: Caller '${caller}' must be a party to this escrow.`);
+      throw new Error(
+        `Unauthorized: Caller '${caller}' must be a party to this escrow.`,
+      );
     }
 
     if (escrow.status !== 'active') {
-      throw new Error(`Cannot approve release: Escrow status is '${escrow.status}'.`);
+      throw new Error(
+        `Cannot approve release: Escrow status is '${escrow.status}'.`,
+      );
     }
 
     // 2. Amounts parsed strictly as bigint
     const releaseAmount = parseBigIntAmount(amountStr);
-    
+
     // Check remaining balance
     const totalAmount = BigInt(escrow.amount);
     const releasedAmount = escrow.releaseHistory.reduce(
       (sum, entry) => sum + BigInt(entry.amount),
-      0n
+      0n,
     );
     const remaining = totalAmount - releasedAmount;
 
     if (releaseAmount > remaining) {
-      throw new Error(`Cannot approve release: Requested amount ${releaseAmount.toString()} exceeds remaining balance of ${remaining.toString()}.`);
+      throw new Error(
+        `Cannot approve release: Requested amount ${releaseAmount.toString()} exceeds remaining balance of ${remaining.toString()}.`,
+      );
     }
 
     const proposal: UnsignedProposal = {
@@ -229,7 +252,10 @@ export class EscrowService {
   /**
    * Finalizes pending approve release after validating confirmation token.
    */
-  public static confirmApproveRelease(caller: string, tokenStr: string): Escrow {
+  public static confirmApproveRelease(
+    caller: string,
+    tokenStr: string,
+  ): Escrow {
     const token = this.validateToken(tokenStr, 'approve_release', caller);
     token.used = true;
 
@@ -240,7 +266,7 @@ export class EscrowService {
     }
 
     const releaseAmount = BigInt(token.args.amount);
-    
+
     // Add to release history
     escrow.releaseHistory.push({
       amount: releaseAmount.toString(),
@@ -252,7 +278,7 @@ export class EscrowService {
     const totalAmount = BigInt(escrow.amount);
     const releasedAmount = escrow.releaseHistory.reduce(
       (sum, entry) => sum + BigInt(entry.amount),
-      0n
+      0n,
     );
 
     if (releasedAmount >= totalAmount) {
@@ -269,8 +295,12 @@ export class EscrowService {
   public static prepareInitiateDispute(
     caller: string,
     escrowId: string,
-    reason: string
-  ): { status: 'pending_confirmation'; proposal: UnsignedProposal; confirmationToken: string } {
+    reason: string,
+  ): {
+    status: 'pending_confirmation';
+    proposal: UnsignedProposal;
+    confirmationToken: string;
+  } {
     const escrow = this.escrows.get(escrowId);
     if (!escrow) {
       throw new Error(`Escrow with ID '${escrowId}' not found.`);
@@ -278,11 +308,15 @@ export class EscrowService {
 
     // 1. Caller authorization checked against agreement parties
     if (caller !== escrow.sender && caller !== escrow.receiver) {
-      throw new Error(`Unauthorized: Caller '${caller}' must be a party to this escrow.`);
+      throw new Error(
+        `Unauthorized: Caller '${caller}' must be a party to this escrow.`,
+      );
     }
 
     if (escrow.status !== 'active') {
-      throw new Error(`Cannot initiate dispute: Escrow status is '${escrow.status}'.`);
+      throw new Error(
+        `Cannot initiate dispute: Escrow status is '${escrow.status}'.`,
+      );
     }
 
     if (!reason || reason.trim() === '') {
@@ -328,7 +362,10 @@ export class EscrowService {
   /**
    * Finalizes pending initiate dispute after validating confirmation token.
    */
-  public static confirmInitiateDispute(caller: string, tokenStr: string): Escrow {
+  public static confirmInitiateDispute(
+    caller: string,
+    tokenStr: string,
+  ): Escrow {
     const token = this.validateToken(tokenStr, 'initiate_dispute', caller);
     token.used = true;
 
@@ -356,7 +393,9 @@ export class EscrowService {
 
     // Caller authorization checked against agreement parties
     if (caller !== escrow.sender && caller !== escrow.receiver) {
-      throw new Error(`Unauthorized: Caller '${caller}' must be a party to this escrow.`);
+      throw new Error(
+        `Unauthorized: Caller '${caller}' must be a party to this escrow.`,
+      );
     }
 
     return escrow;
@@ -378,7 +417,10 @@ export class EscrowService {
   /**
    * Get release history of an escrow. Checks caller authorization.
    */
-  public static getReleaseHistory(caller: string, escrowId: string): ReleaseHistoryEntry[] {
+  public static getReleaseHistory(
+    caller: string,
+    escrowId: string,
+  ): ReleaseHistoryEntry[] {
     const escrow = this.escrows.get(escrowId);
     if (!escrow) {
       throw new Error(`Escrow with ID '${escrowId}' not found.`);
@@ -386,7 +428,9 @@ export class EscrowService {
 
     // Caller authorization checked against agreement parties
     if (caller !== escrow.sender && caller !== escrow.receiver) {
-      throw new Error(`Unauthorized: Caller '${caller}' must be a party to this escrow.`);
+      throw new Error(
+        `Unauthorized: Caller '${caller}' must be a party to this escrow.`,
+      );
     }
 
     return escrow.releaseHistory;
@@ -398,7 +442,7 @@ export class EscrowService {
   private static validateToken(
     tokenStr: string,
     expectedAction: string,
-    caller: string
+    caller: string,
   ): ConfirmationToken {
     if (!tokenStr || tokenStr.trim() === '') {
       throw new Error('Missing confirmation token.');
@@ -410,7 +454,9 @@ export class EscrowService {
     }
 
     if (token.used) {
-      throw new Error('Replayed token: Confirmation token has already been used.');
+      throw new Error(
+        'Replayed token: Confirmation token has already been used.',
+      );
     }
 
     if (token.expiresAt.getTime() < Date.now()) {
@@ -418,11 +464,15 @@ export class EscrowService {
     }
 
     if (token.action !== expectedAction) {
-      throw new Error(`Invalid confirmation token: Token was generated for action '${token.action}', not '${expectedAction}'.`);
+      throw new Error(
+        `Invalid confirmation token: Token was generated for action '${token.action}', not '${expectedAction}'.`,
+      );
     }
 
     if (token.caller !== caller) {
-      throw new Error('Unauthorized: Caller does not match the requester of this confirmation token.');
+      throw new Error(
+        'Unauthorized: Caller does not match the requester of this confirmation token.',
+      );
     }
 
     return token;

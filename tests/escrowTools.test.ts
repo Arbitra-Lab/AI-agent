@@ -8,7 +8,7 @@ describe('Escrow Tools Registration & Execution Tests', () => {
   const SENDER = 'GD5T6...SENDER_PUBLIC_KEY';
   const RECEIVER = 'GB7T4...RECEIVER_PUBLIC_KEY';
   const UNAUTHORIZED = 'GA3T9...STRANGER_PUBLIC_KEY';
-  
+
   const nativeAssetCode = 'USD';
   const nativeAssetIssuer = 'GBXXXX...ISSUER_PUBLIC_KEY';
 
@@ -37,7 +37,7 @@ describe('Escrow Tools Registration & Execution Tests', () => {
         assetCode: nativeAssetCode,
         assetIssuer: nativeAssetIssuer,
       },
-      senderContext
+      senderContext,
     );
 
     expect(prepareCreateResult.status).toBe('pending_confirmation');
@@ -61,7 +61,7 @@ describe('Escrow Tools Registration & Execution Tests', () => {
       {
         confirmationToken: token,
       },
-      senderContext
+      senderContext,
     );
 
     expect(finalizeCreateResult.status).toBe('confirmed');
@@ -80,7 +80,7 @@ describe('Escrow Tools Registration & Execution Tests', () => {
     const statusResult = await ToolRegistry.executeTool(
       'get_escrow_status',
       { escrowId },
-      senderContext
+      senderContext,
     );
     expect(statusResult.id).toBe(escrowId);
     expect(statusResult.status).toBe('active');
@@ -89,7 +89,7 @@ describe('Escrow Tools Registration & Execution Tests', () => {
     const listResult = await ToolRegistry.executeTool(
       'list_my_escrows',
       {},
-      senderContext
+      senderContext,
     );
     expect(listResult.length).toBe(1);
     expect(listResult[0].id).toBe(escrowId);
@@ -101,7 +101,7 @@ describe('Escrow Tools Registration & Execution Tests', () => {
         escrowId,
         amount: '400',
       },
-      senderContext
+      senderContext,
     );
     expect(prepareReleaseResult.status).toBe('pending_confirmation');
     expect(prepareReleaseResult.confirmationToken).toBeDefined();
@@ -112,7 +112,7 @@ describe('Escrow Tools Registration & Execution Tests', () => {
       {
         confirmationToken: prepareReleaseResult.confirmationToken,
       },
-      senderContext
+      senderContext,
     );
     expect(finalizeReleaseResult.status).toBe('confirmed');
     expect(finalizeReleaseResult.escrow.releaseHistory.length).toBe(1);
@@ -123,7 +123,7 @@ describe('Escrow Tools Registration & Execution Tests', () => {
     const historyResult = await ToolRegistry.executeTool(
       'get_release_history',
       { escrowId },
-      senderContext
+      senderContext,
     );
     expect(historyResult.length).toBe(1);
     expect(historyResult[0].amount).toBe('400');
@@ -135,7 +135,7 @@ describe('Escrow Tools Registration & Execution Tests', () => {
         escrowId,
         reason: 'Services were not rendered according to the specifications.',
       },
-      senderContext
+      senderContext,
     );
     expect(prepareDisputeResult.status).toBe('pending_confirmation');
 
@@ -145,11 +145,13 @@ describe('Escrow Tools Registration & Execution Tests', () => {
       {
         confirmationToken: prepareDisputeResult.confirmationToken,
       },
-      senderContext
+      senderContext,
     );
     expect(finalizeDisputeResult.status).toBe('confirmed');
     expect(finalizeDisputeResult.escrow.status).toBe('disputed');
-    expect(finalizeDisputeResult.escrow.disputeReason).toBe('Services were not rendered according to the specifications.');
+    expect(finalizeDisputeResult.escrow.disputeReason).toBe(
+      'Services were not rendered according to the specifications.',
+    );
   });
 
   // --- UNAUTHORIZED CALLER TESTS ---
@@ -168,11 +170,11 @@ describe('Escrow Tools Registration & Execution Tests', () => {
           assetCode: nativeAssetCode,
           assetIssuer: nativeAssetIssuer,
         },
-        strangerContext
-      )
+        strangerContext,
+      ),
     ).rejects.toThrow(/Unauthorized/);
 
-    let logs = AuditLogger.getLogs();
+    const logs = AuditLogger.getLogs();
     expect(logs.length).toBe(1);
     expect(logs[0].status).toBe('failure');
     expect(logs[0].error).toContain('Unauthorized');
@@ -187,33 +189,49 @@ describe('Escrow Tools Registration & Execution Tests', () => {
         assetCode: nativeAssetCode,
         assetIssuer: nativeAssetIssuer,
       },
-      senderContext
+      senderContext,
     );
     const confirmedRes = await ToolRegistry.executeTool(
       'create_escrow',
       { confirmationToken: createRes.confirmationToken },
-      senderContext
+      senderContext,
     );
     const escrowId = confirmedRes.escrow.id;
 
     // 2. Unauthorized get status
     await expect(
-      ToolRegistry.executeTool('get_escrow_status', { escrowId }, strangerContext)
+      ToolRegistry.executeTool(
+        'get_escrow_status',
+        { escrowId },
+        strangerContext,
+      ),
     ).rejects.toThrow(/Unauthorized/);
 
     // 3. Unauthorized get release history
     await expect(
-      ToolRegistry.executeTool('get_release_history', { escrowId }, strangerContext)
+      ToolRegistry.executeTool(
+        'get_release_history',
+        { escrowId },
+        strangerContext,
+      ),
     ).rejects.toThrow(/Unauthorized/);
 
     // 4. Unauthorized approve release
     await expect(
-      ToolRegistry.executeTool('approve_release', { escrowId, amount: '100' }, strangerContext)
+      ToolRegistry.executeTool(
+        'approve_release',
+        { escrowId, amount: '100' },
+        strangerContext,
+      ),
     ).rejects.toThrow(/Unauthorized/);
 
     // 5. Unauthorized initiate dispute
     await expect(
-      ToolRegistry.executeTool('initiate_dispute', { escrowId, reason: 'unauthorized' }, strangerContext)
+      ToolRegistry.executeTool(
+        'initiate_dispute',
+        { escrowId, reason: 'unauthorized' },
+        strangerContext,
+      ),
     ).rejects.toThrow(/Unauthorized/);
   });
 
@@ -223,12 +241,20 @@ describe('Escrow Tools Registration & Execution Tests', () => {
 
     // Call phase 2 (confirmation) with empty token
     await expect(
-      ToolRegistry.executeTool('create_escrow', { confirmationToken: '' }, senderContext)
+      ToolRegistry.executeTool(
+        'create_escrow',
+        { confirmationToken: '' },
+        senderContext,
+      ),
     ).rejects.toThrow(/Missing confirmation token/);
 
     // Call phase 2 with invalid token
     await expect(
-      ToolRegistry.executeTool('create_escrow', { confirmationToken: 'invalid_token' }, senderContext)
+      ToolRegistry.executeTool(
+        'create_escrow',
+        { confirmationToken: 'invalid_token' },
+        senderContext,
+      ),
     ).rejects.toThrow(/Invalid confirmation token/);
 
     // Verify it is logged as a failure
@@ -249,7 +275,7 @@ describe('Escrow Tools Registration & Execution Tests', () => {
         assetCode: nativeAssetCode,
         assetIssuer: nativeAssetIssuer,
       },
-      senderContext
+      senderContext,
     );
 
     const token = prepareRes.confirmationToken;
@@ -258,7 +284,7 @@ describe('Escrow Tools Registration & Execution Tests', () => {
     const firstUseRes = await ToolRegistry.executeTool(
       'create_escrow',
       { confirmationToken: token },
-      senderContext
+      senderContext,
     );
     expect(firstUseRes.status).toBe('confirmed');
 
@@ -267,8 +293,8 @@ describe('Escrow Tools Registration & Execution Tests', () => {
       ToolRegistry.executeTool(
         'create_escrow',
         { confirmationToken: token },
-        senderContext
-      )
+        senderContext,
+      ),
     ).rejects.toThrow(/Replayed token/);
 
     const logs = AuditLogger.getLogs();
@@ -280,7 +306,16 @@ describe('Escrow Tools Registration & Execution Tests', () => {
   test('Security: Malformed amount rejection', async () => {
     const senderContext: ToolContext = { caller: SENDER };
 
-    const invalidAmounts = ['abc', '100.5', '-100', '', '  ', '100a', '0', '1e3'];
+    const invalidAmounts = [
+      'abc',
+      '100.5',
+      '-100',
+      '',
+      '  ',
+      '100a',
+      '0',
+      '1e3',
+    ];
 
     for (const amount of invalidAmounts) {
       await expect(
@@ -293,8 +328,8 @@ describe('Escrow Tools Registration & Execution Tests', () => {
             assetCode: nativeAssetCode,
             assetIssuer: nativeAssetIssuer,
           },
-          senderContext
-        )
+          senderContext,
+        ),
       ).rejects.toThrow(/Invalid or ambiguous amount/);
     }
   });
@@ -312,7 +347,7 @@ describe('Escrow Tools Registration & Execution Tests', () => {
         assetCode: nativeAssetCode,
         assetIssuer: nativeAssetIssuer,
       },
-      senderContext
+      senderContext,
     );
 
     const token = prepareRes.confirmationToken;
@@ -325,8 +360,8 @@ describe('Escrow Tools Registration & Execution Tests', () => {
       ToolRegistry.executeTool(
         'create_escrow',
         { confirmationToken: token },
-        senderContext
-      )
+        senderContext,
+      ),
     ).rejects.toThrow(/expired/);
 
     const logs = AuditLogger.getLogs();

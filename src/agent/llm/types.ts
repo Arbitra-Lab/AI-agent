@@ -22,11 +22,23 @@ export interface ToolResult {
 
 export interface Message {
   role: 'user' | 'assistant';
-  content: string | Array<
-    | { type: 'text'; text: string }
-    | { type: 'tool_use'; id: string; name: string; input: Record<string, any> }
-    | { type: 'tool_result'; tool_use_id: string; content: string; is_error?: boolean }
-  >;
+  content:
+    | string
+    | Array<
+        | { type: 'text'; text: string }
+        | {
+            type: 'tool_use';
+            id: string;
+            name: string;
+            input: Record<string, any>;
+          }
+        | {
+            type: 'tool_result';
+            tool_use_id: string;
+            content: string;
+            is_error?: boolean;
+          }
+      >;
 }
 
 export interface ChatRequest {
@@ -45,7 +57,8 @@ export interface Usage {
 
 export interface ChatResponse {
   message: Message;
-  stop_reason: 'end_turn' | 'max_tokens' | 'stop_sequence' | 'tool_use' | string;
+  stop_reason:
+    'end_turn' | 'max_tokens' | 'stop_sequence' | 'tool_use' | (string & {});
   usage: Usage;
 }
 

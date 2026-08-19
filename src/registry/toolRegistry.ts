@@ -40,26 +40,19 @@ export class ToolRegistry {
   public static async executeTool(
     name: string,
     args: any,
-    context: ToolContext
+    context: ToolContext,
   ): Promise<any> {
     const tool = this.registry.get(name);
     if (!tool) {
       const errorMsg = `Tool '${name}' is not registered.`;
       // Log the failed lookup as a system failure
-      AuditLogger.log(
-        name,
-        context,
-        args,
-        false,
-        'failure',
-        errorMsg
-      );
+      AuditLogger.log(name, context, args, false, 'failure', errorMsg);
       throw new Error(errorMsg);
     }
 
     try {
       const result = await tool.execute(args, context);
-      
+
       // Determine the status from the result
       let status: 'success' | 'pending_confirmation' = 'success';
       if (tool.mutating && result && result.status === 'pending_confirmation') {
@@ -73,7 +66,7 @@ export class ToolRegistry {
         tool.mutating,
         status,
         undefined,
-        result
+        result,
       );
 
       return result;
@@ -85,7 +78,7 @@ export class ToolRegistry {
         args,
         tool.mutating,
         'failure',
-        errMsg
+        errMsg,
       );
       throw error;
     }

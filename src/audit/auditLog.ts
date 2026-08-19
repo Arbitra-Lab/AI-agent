@@ -25,7 +25,7 @@ export class AuditLogger {
     mutating: boolean,
     status: 'success' | 'failure' | 'pending_confirmation',
     error?: string,
-    metadata?: any
+    metadata?: any,
   ): AuditLogEntry {
     const entry: AuditLogEntry = {
       id: Math.random().toString(36).substring(2, 11),

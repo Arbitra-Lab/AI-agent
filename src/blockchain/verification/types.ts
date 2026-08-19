@@ -41,9 +41,7 @@ export interface FailedTransaction {
 
 /** Result of a single point-in-time verification against Horizon. */
 export type TransactionVerification =
-  | PendingTransaction
-  | SuccessfulTransaction
-  | FailedTransaction;
+  PendingTransaction | SuccessfulTransaction | FailedTransaction;
 
 /**
  * Polling gave up before the transaction reached a final state.
@@ -62,10 +60,7 @@ export type TransactionOutcome = TransactionVerification | TransactionTimeout;
 
 /** Escrow status as reported by the escrow contract's get_escrow (issue #22). */
 export type ChainEscrowStatus =
-  | 'PENDING_FUNDING'
-  | 'FUNDED'
-  | 'DISPUTED'
-  | 'RELEASED';
+  'PENDING_FUNDING' | 'FUNDED' | 'DISPUTED' | 'RELEASED';
 
 /** Escrow state values as stored in Postgres (db/schema/escrows.ts). */
 export type LocalEscrowState =

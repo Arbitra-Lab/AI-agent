@@ -1,7 +1,7 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
-import * as dotenv from "dotenv";
-import * as schema from "./schema";
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import * as dotenv from 'dotenv';
+import * as schema from './schema';
 
 dotenv.config();
 
@@ -19,11 +19,11 @@ export const pool = new Pool({
   connectionTimeoutMillis: 5_000,
 });
 
-pool.on("error", (err) => {
+pool.on('error', (err) => {
   // Idle client errors (e.g. dropped connections) shouldn't crash the
   // process - the pool will create a new client on the next checkout.
-  // eslint-disable-next-line no-console
-  console.error("[db] unexpected error on idle client", err);
+
+  console.error('[db] unexpected error on idle client', err);
 });
 
 export const db = drizzle(pool, { schema });

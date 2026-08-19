@@ -4,7 +4,6 @@ import {
   ChatRequest,
   ChatResponse,
   ChatChunk,
-  Message,
   ToolDefinition,
 } from './types';
 import { LLMProviderError, LLMProviderErrorCode } from './errors';
@@ -42,19 +41,28 @@ export class OpenAIProvider implements LLMProvider {
         isRetryable = true;
       }
 
-      return new LLMProviderError(error.message, code, this.name, isRetryable, error);
+      return new LLMProviderError(
+        error.message,
+        code,
+        this.name,
+        isRetryable,
+        error,
+      );
     }
     return new LLMProviderError(
       error?.message || 'Unknown error',
       LLMProviderErrorCode.UNKNOWN,
       this.name,
       false,
-      error
+      error,
     );
   }
 
-  private translateMessages(req: ChatRequest): OpenAI.Chat.Completions.ChatCompletionMessageParam[] {
-    const openaiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
+  private translateMessages(
+    req: ChatRequest,
+  ): OpenAI.Chat.Completions.ChatCompletionMessageParam[] {
+    const openaiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
+      [];
 
     if (req.system) {
       openaiMessages.push({ role: 'system', content: req.system });
@@ -69,7 +77,9 @@ export class OpenAIProvider implements LLMProvider {
       } else {
         if (msg.role === 'user') {
           // Flatten user message tools
-          const toolResults = msg.content.filter((c) => c.type === 'tool_result');
+          const toolResults = msg.content.filter(
+            (c) => c.type === 'tool_result',
+          );
           const texts = msg.content.filter((c) => c.type === 'text');
 
           if (toolResults.length > 0) {
@@ -91,17 +101,19 @@ export class OpenAIProvider implements LLMProvider {
           const toolUses = msg.content.filter((c) => c.type === 'tool_use');
           const texts = msg.content.filter((c) => c.type === 'text');
 
-          const tool_calls: OpenAI.Chat.Completions.ChatCompletionMessageToolCall[] = toolUses.map(
-            (c: any) => ({
+          const tool_calls: OpenAI.Chat.Completions.ChatCompletionMessageToolCall[] =
+            toolUses.map((c: any) => ({
               id: c.id,
               type: 'function',
               function: { name: c.name, arguments: JSON.stringify(c.input) },
-            })
-          );
+            }));
 
           openaiMessages.push({
             role: 'assistant',
-            content: texts.length > 0 ? texts.map((t: any) => t.text).join('\n') : null,
+            content:
+              texts.length > 0
+                ? texts.map((t: any) => t.text).join('\n')
+                : null,
             tool_calls: tool_calls.length > 0 ? tool_calls : undefined,
           });
         }
@@ -111,7 +123,9 @@ export class OpenAIProvider implements LLMProvider {
     return openaiMessages;
   }
 
-  private translateTools(tools?: ToolDefinition[]): OpenAI.Chat.Completions.ChatCompletionTool[] | undefined {
+  private translateTools(
+    tools?: ToolDefinition[],
+  ): OpenAI.Chat.Completions.ChatCompletionTool[] | undefined {
     if (!tools) return undefined;
     return tools.map((t) => ({
       type: 'function',
@@ -159,9 +173,15 @@ export class OpenAIProvider implements LLMProvider {
       return {
         message: {
           role: 'assistant',
-          content: messageContent.length === 1 && messageContent[0].type === 'text' ? messageContent[0].text : messageContent,
+          content:
+            messageContent.length === 1 && messageContent[0].type === 'text'
+              ? messageContent[0].text
+              : messageContent,
         },
-        stop_reason: choice.finish_reason === 'tool_calls' ? 'tool_use' : choice.finish_reason,
+        stop_reason:
+          choice.finish_reason === 'tool_calls'
+            ? 'tool_use'
+            : choice.finish_reason,
         usage: {
           input_tokens: response.usage?.prompt_tokens || 0,
           output_tokens: response.usage?.completion_tokens || 0,
@@ -192,7 +212,13 @@ export class OpenAIProvider implements LLMProvider {
           yield { type: 'text', text: choice.delta.content };
         }
         if (choice.finish_reason) {
-          yield { type: 'stop', stop_reason: choice.finish_reason === 'tool_calls' ? 'tool_use' : choice.finish_reason };
+          yield {
+            type: 'stop',
+            stop_reason:
+              choice.finish_reason === 'tool_calls'
+                ? 'tool_use'
+                : choice.finish_reason,
+          };
         }
       }
       console.log(`[OpenAI] stream latency: ${Date.now() - startTime}ms`);

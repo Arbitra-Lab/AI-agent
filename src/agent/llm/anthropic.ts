@@ -42,14 +42,20 @@ export class AnthropicProvider implements LLMProvider {
         isRetryable = true;
       }
 
-      return new LLMProviderError(error.message, code, this.name, isRetryable, error);
+      return new LLMProviderError(
+        error.message,
+        code,
+        this.name,
+        isRetryable,
+        error,
+      );
     }
     return new LLMProviderError(
       error?.message || 'Unknown error',
       LLMProviderErrorCode.UNKNOWN,
       this.name,
       false,
-      error
+      error,
     );
   }
 
@@ -85,7 +91,9 @@ export class AnthropicProvider implements LLMProvider {
     });
   }
 
-  private translateTools(tools?: ToolDefinition[]): Anthropic.Tool[] | undefined {
+  private translateTools(
+    tools?: ToolDefinition[],
+  ): Anthropic.Tool[] | undefined {
     if (!tools) return undefined;
     return tools.map((t) => ({
       name: t.name,
@@ -118,7 +126,10 @@ export class AnthropicProvider implements LLMProvider {
       return {
         message: {
           role: 'assistant',
-          content: messageContent.length === 1 && messageContent[0].type === 'text' ? messageContent[0].text : messageContent,
+          content:
+            messageContent.length === 1 && messageContent[0].type === 'text'
+              ? messageContent[0].text
+              : messageContent,
         },
         stop_reason: response.stop_reason || 'end_turn',
         usage: {
@@ -154,7 +165,7 @@ export class AnthropicProvider implements LLMProvider {
             yield { type: 'stop', stop_reason: chunk.delta.stop_reason };
           }
           if (chunk.usage) {
-             // Anthropic streams emit usage delta
+            // Anthropic streams emit usage delta
           }
         }
       }

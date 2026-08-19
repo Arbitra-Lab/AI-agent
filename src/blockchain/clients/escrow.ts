@@ -1,14 +1,4 @@
-import {
-  Account,
-  Keypair,
-  Horizon,
-  TransactionBuilder,
-  Operation,
-  FeeBumpTransaction,
-  Transaction,
-  xdr,
-  Networks,
-} from '@stellar/stellar-sdk';
+import { Keypair, Horizon } from '@stellar/stellar-sdk';
 import {
   EscrowError,
   EscrowErrorCode,
@@ -57,7 +47,9 @@ export class EscrowContractClient {
   /**
    * Factory method to create client with environment config
    */
-  static create(network: 'testnet' | 'public' = 'testnet'): EscrowContractClient {
+  static create(
+    network: 'testnet' | 'public' = 'testnet',
+  ): EscrowContractClient {
     const config = BlockchainConfig.getEscrowConfig(network);
     return new EscrowContractClient(config);
   }
@@ -70,7 +62,7 @@ export class EscrowContractClient {
    * Get escrow details by ID
    * @param escrowId BytesN<32> escrow identifier
    */
-  async getEscrow(escrowId: string): Promise<EscrowMetadata> {
+  getEscrow(escrowId: string): Promise<EscrowMetadata> {
     try {
       // TODO: Call contract's get_escrow method via Soroban RPC
       // For now, return placeholder
@@ -88,7 +80,7 @@ export class EscrowContractClient {
    * Get approval count for escrow release
    * @param escrowId BytesN<32> escrow identifier
    */
-  async getApprovalCount(escrowId: string): Promise<ApprovalCount> {
+  getApprovalCount(escrowId: string): Promise<ApprovalCount> {
     try {
       // TODO: Call contract's get_approval_count method
       throw new EscrowError(
@@ -105,10 +97,10 @@ export class EscrowContractClient {
    * Get release history for escrow
    * @param escrowId BytesN<32> escrow identifier
    */
-  async getReleaseHistory(escrowId: string): Promise<ReleaseHistoryEntry[]> {
+  getReleaseHistory(_escrowId: string): Promise<ReleaseHistoryEntry[]> {
     try {
       // TODO: Call contract's get_release_history method
-      return [];
+      return Promise.resolve([]);
     } catch (error) {
       if (error instanceof EscrowError) throw error;
       throw this.mapError(error);
@@ -119,7 +111,7 @@ export class EscrowContractClient {
    * Get timeout configuration
    * @param escrowId BytesN<32> escrow identifier
    */
-  async getTimeoutConfig(escrowId: string): Promise<TimeoutConfig> {
+  getTimeoutConfig(escrowId: string): Promise<TimeoutConfig> {
     try {
       // TODO: Call contract's get_timeout_config method
       throw new EscrowError(
@@ -153,7 +145,10 @@ export class EscrowContractClient {
       // Simulate the operation first
       const simulation = await this.simulateCreate(params);
       if (!simulation.success) {
-        throw simulation.error;
+        throw (
+          simulation.error ??
+          new EscrowError(EscrowErrorCode.UNKNOWN_ERROR, 'Simulation failed')
+        );
       }
 
       // TODO: Build and submit transaction
@@ -178,7 +173,10 @@ export class EscrowContractClient {
     try {
       const simulation = await this.simulateFund(params);
       if (!simulation.success) {
-        throw simulation.error;
+        throw (
+          simulation.error ??
+          new EscrowError(EscrowErrorCode.UNKNOWN_ERROR, 'Simulation failed')
+        );
       }
 
       // TODO: Build and submit transaction
@@ -199,7 +197,10 @@ export class EscrowContractClient {
     try {
       const simulation = await this.simulateApproveRelease(params);
       if (!simulation.success) {
-        throw simulation.error;
+        throw (
+          simulation.error ??
+          new EscrowError(EscrowErrorCode.UNKNOWN_ERROR, 'Simulation failed')
+        );
       }
 
       // TODO: Build and submit transaction
@@ -221,7 +222,10 @@ export class EscrowContractClient {
     try {
       const simulation = await this.simulateApprovePartialRelease(params);
       if (!simulation.success) {
-        throw simulation.error;
+        throw (
+          simulation.error ??
+          new EscrowError(EscrowErrorCode.UNKNOWN_ERROR, 'Simulation failed')
+        );
       }
 
       // TODO: Build and submit transaction
@@ -244,7 +248,10 @@ export class EscrowContractClient {
     try {
       const simulation = await this.simulateReleasePartial(params);
       if (!simulation.success) {
-        throw simulation.error;
+        throw (
+          simulation.error ??
+          new EscrowError(EscrowErrorCode.UNKNOWN_ERROR, 'Simulation failed')
+        );
       }
 
       // TODO: Build and submit transaction
@@ -268,7 +275,10 @@ export class EscrowContractClient {
     try {
       const simulation = await this.simulateReleaseWithDeduction(params);
       if (!simulation.success) {
-        throw simulation.error;
+        throw (
+          simulation.error ??
+          new EscrowError(EscrowErrorCode.UNKNOWN_ERROR, 'Simulation failed')
+        );
       }
 
       // TODO: Build and submit transaction
@@ -291,7 +301,10 @@ export class EscrowContractClient {
     try {
       const simulation = await this.simulateInitiateDispute(params);
       if (!simulation.success) {
-        throw simulation.error;
+        throw (
+          simulation.error ??
+          new EscrowError(EscrowErrorCode.UNKNOWN_ERROR, 'Simulation failed')
+        );
       }
 
       // TODO: Build and submit transaction
@@ -312,7 +325,10 @@ export class EscrowContractClient {
     try {
       const simulation = await this.simulateReleaseOnTimeout(params);
       if (!simulation.success) {
-        throw simulation.error;
+        throw (
+          simulation.error ??
+          new EscrowError(EscrowErrorCode.UNKNOWN_ERROR, 'Simulation failed')
+        );
       }
 
       // TODO: Build and submit transaction
@@ -328,44 +344,48 @@ export class EscrowContractClient {
    * These methods simulate transactions before submission
    */
 
-  private async simulateCreate(params: any): Promise<SimulationResult> {
+  private simulateCreate(_params: any): Promise<SimulationResult> {
     // TODO: Implement actual simulation
-    return { success: true };
+    return Promise.resolve({ success: true });
   }
 
-  private async simulateFund(params: any): Promise<SimulationResult> {
+  private simulateFund(_params: any): Promise<SimulationResult> {
     // TODO: Implement actual simulation
-    return { success: true };
+    return Promise.resolve({ success: true });
   }
 
-  private async simulateApproveRelease(params: any): Promise<SimulationResult> {
+  private simulateApproveRelease(_params: any): Promise<SimulationResult> {
     // TODO: Implement actual simulation
-    return { success: true };
+    return Promise.resolve({ success: true });
   }
 
-  private async simulateApprovePartialRelease(params: any): Promise<SimulationResult> {
+  private simulateApprovePartialRelease(
+    _params: any,
+  ): Promise<SimulationResult> {
     // TODO: Implement actual simulation
-    return { success: true };
+    return Promise.resolve({ success: true });
   }
 
-  private async simulateReleasePartial(params: any): Promise<SimulationResult> {
+  private simulateReleasePartial(_params: any): Promise<SimulationResult> {
     // TODO: Implement actual simulation
-    return { success: true };
+    return Promise.resolve({ success: true });
   }
 
-  private async simulateReleaseWithDeduction(params: any): Promise<SimulationResult> {
+  private simulateReleaseWithDeduction(
+    _params: any,
+  ): Promise<SimulationResult> {
     // TODO: Implement actual simulation
-    return { success: true };
+    return Promise.resolve({ success: true });
   }
 
-  private async simulateInitiateDispute(params: any): Promise<SimulationResult> {
+  private simulateInitiateDispute(_params: any): Promise<SimulationResult> {
     // TODO: Implement actual simulation
-    return { success: true };
+    return Promise.resolve({ success: true });
   }
 
-  private async simulateReleaseOnTimeout(params: any): Promise<SimulationResult> {
+  private simulateReleaseOnTimeout(_params: any): Promise<SimulationResult> {
     // TODO: Implement actual simulation
-    return { success: true };
+    return Promise.resolve({ success: true });
   }
 
   /**
@@ -388,15 +408,9 @@ export class EscrowContractClient {
         return new EscrowError(EscrowErrorCode.INSUFFICIENT_BALANCE, message);
       }
 
-      return new EscrowError(
-        EscrowErrorCode.UNKNOWN_ERROR,
-        message,
-      );
+      return new EscrowError(EscrowErrorCode.UNKNOWN_ERROR, message);
     }
 
-    return new EscrowError(
-      EscrowErrorCode.UNKNOWN_ERROR,
-      String(error),
-    );
+    return new EscrowError(EscrowErrorCode.UNKNOWN_ERROR, String(error));
   }
 }

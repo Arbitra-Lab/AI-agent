@@ -42,7 +42,9 @@ export interface CursorStore {
   set(name: string, cursor: string): Promise<void>;
 }
 
-export function mapChainStatusToLocalState(status: ChainEscrowStatus): LocalEscrowState {
+export function mapChainStatusToLocalState(
+  status: ChainEscrowStatus,
+): LocalEscrowState {
   switch (status) {
     case 'PENDING_FUNDING':
       return 'pending_deposit';
@@ -83,7 +85,10 @@ export class EscrowReconciler {
   constructor(
     private readonly chain: EscrowChainReader,
     private readonly repo: EscrowStateRepository,
-    private readonly log: Pick<typeof logger, 'info' | 'warn' | 'error'> = logger,
+    private readonly log: Pick<
+      typeof logger,
+      'info' | 'warn' | 'error'
+    > = logger,
   ) {}
 
   /**

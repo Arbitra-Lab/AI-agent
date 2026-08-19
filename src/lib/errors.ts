@@ -3,7 +3,12 @@ export class AppError extends Error {
   public readonly code: string;
   public readonly isRetryable: boolean;
 
-  constructor(message: string, statusCode: number, code: string, isRetryable: boolean = false) {
+  constructor(
+    message: string,
+    statusCode: number,
+    code: string,
+    isRetryable: boolean = false,
+  ) {
     super(message);
     this.statusCode = statusCode;
     this.code = code;
@@ -61,7 +66,10 @@ export class LLMProviderError extends AppError {
 }
 
 export class BlockchainError extends AppError {
-  constructor(message: string = 'Blockchain error', isRetryable: boolean = false) {
+  constructor(
+    message: string = 'Blockchain error',
+    isRetryable: boolean = false,
+  ) {
     super(message, 502, 'BLOCKCHAIN_ERROR', isRetryable);
   }
 }

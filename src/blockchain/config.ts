@@ -5,31 +5,39 @@ import { EscrowConfig } from './types/escrow';
  * Handles network-specific contract IDs and endpoints
  */
 export class BlockchainConfig {
-  private static readonly TESTNET_HORIZON = 'https://horizon-testnet.stellar.org';
+  private static readonly TESTNET_HORIZON =
+    'https://horizon-testnet.stellar.org';
   private static readonly PUBLIC_HORIZON = 'https://horizon.stellar.org';
 
-  private static readonly TESTNET_PASSPHRASE = 'Test SDF Network ; September 2015';
-  private static readonly PUBLIC_PASSPHRASE = 'Public Global Stellar Network ; September 2015';
+  private static readonly TESTNET_PASSPHRASE =
+    'Test SDF Network ; September 2015';
+  private static readonly PUBLIC_PASSPHRASE =
+    'Public Global Stellar Network ; September 2015';
 
   /**
    * Get Escrow contract configuration
    */
-  static getEscrowConfig(network: 'testnet' | 'public' = 'testnet'): EscrowConfig {
+  static getEscrowConfig(
+    network: 'testnet' | 'public' = 'testnet',
+  ): EscrowConfig {
     const contractId = this.getContractId('ESCROW', network);
 
     if (!contractId) {
       throw new Error(
         `Escrow contract ID not configured for ${network}. ` +
-        `Set ESCROW_CONTRACT_ID_${network.toUpperCase()}`,
+          `Set ESCROW_CONTRACT_ID_${network.toUpperCase()}`,
       );
     }
 
     return {
       network,
       contractId,
-      horizonUrl: network === 'testnet' ? this.TESTNET_HORIZON : this.PUBLIC_HORIZON,
+      horizonUrl:
+        network === 'testnet' ? this.TESTNET_HORIZON : this.PUBLIC_HORIZON,
       networkPassphrase:
-        network === 'testnet' ? this.TESTNET_PASSPHRASE : this.PUBLIC_PASSPHRASE,
+        network === 'testnet'
+          ? this.TESTNET_PASSPHRASE
+          : this.PUBLIC_PASSPHRASE,
     };
   }
 
@@ -37,7 +45,9 @@ export class BlockchainConfig {
    * Get network passphrase
    */
   static getNetworkPassphrase(network: 'testnet' | 'public'): string {
-    return network === 'testnet' ? this.TESTNET_PASSPHRASE : this.PUBLIC_PASSPHRASE;
+    return network === 'testnet'
+      ? this.TESTNET_PASSPHRASE
+      : this.PUBLIC_PASSPHRASE;
   }
 
   /**
@@ -50,7 +60,10 @@ export class BlockchainConfig {
   /**
    * Get contract ID from environment
    */
-  private static getContractId(contract: string, network: 'testnet' | 'public'): string | undefined {
+  private static getContractId(
+    contract: string,
+    network: 'testnet' | 'public',
+  ): string | undefined {
     const envKey = `${contract}_CONTRACT_ID_${network.toUpperCase()}`;
     const value = process.env[envKey];
 

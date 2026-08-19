@@ -10,7 +10,7 @@ export const errorHandler = (
   err: Error,
   req: RequestWithId,
   res: Response,
-  next: NextFunction
+  _next: NextFunction,
 ) => {
   const requestId = req.id || 'unknown';
 
@@ -38,10 +38,13 @@ export const errorHandler = (
   // Some library errors (e.g. body-parser's PayloadTooLargeError) carry a
   // meaningful HTTP status without being an AppError. Respect it when
   // present rather than flattening every non-AppError to 500.
-  const libraryStatus = (err as Error & { status?: number; statusCode?: number })
-    .status ?? (err as Error & { statusCode?: number }).statusCode;
+  const libraryStatus =
+    (err as Error & { status?: number; statusCode?: number }).status ??
+    (err as Error & { statusCode?: number }).statusCode;
   const statusCode =
-    typeof libraryStatus === 'number' && libraryStatus >= 400 && libraryStatus < 600
+    typeof libraryStatus === 'number' &&
+    libraryStatus >= 400 &&
+    libraryStatus < 600
       ? libraryStatus
       : 500;
 

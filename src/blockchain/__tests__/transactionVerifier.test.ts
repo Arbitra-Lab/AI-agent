@@ -22,7 +22,9 @@ function resultXdrWithCode(code: number): string {
   return bytes.toString('base64');
 }
 
-function successRecord(overrides: Partial<HorizonTransactionRecord> = {}): HorizonTransactionRecord {
+function successRecord(
+  overrides: Partial<HorizonTransactionRecord> = {},
+): HorizonTransactionRecord {
   return {
     hash: HASH,
     successful: true,
@@ -35,17 +37,19 @@ function successRecord(overrides: Partial<HorizonTransactionRecord> = {}): Horiz
 
 class FakeHorizon implements HorizonReader {
   /** Responses returned in order; the last one repeats forever. */
-  constructor(private readonly responses: Array<HorizonTransactionRecord | null>) {}
+  constructor(
+    private readonly responses: Array<HorizonTransactionRecord | null>,
+  ) {}
   calls = 0;
 
-  async getTransaction(): Promise<HorizonTransactionRecord | null> {
+  getTransaction(): Promise<HorizonTransactionRecord | null> {
     const index = Math.min(this.calls, this.responses.length - 1);
     this.calls += 1;
-    return this.responses[index];
+    return Promise.resolve(this.responses[index]);
   }
 
-  async getLatestLedger() {
-    return { sequence: 1, closedAt: '2026-07-21T10:00:00Z' };
+  getLatestLedger() {
+    return Promise.resolve({ sequence: 1, closedAt: '2026-07-21T10:00:00Z' });
   }
 }
 
@@ -55,9 +59,10 @@ function fakeClock() {
   const delays: number[] = [];
   return {
     now: () => t,
-    sleep: async (ms: number) => {
+    sleep: (ms: number) => {
       delays.push(ms);
       t += ms;
+      return Promise.resolve();
     },
     delays,
   };
@@ -71,7 +76,9 @@ describe('TransactionVerifier.verifyTransaction', () => {
   });
 
   it('returns success with ledger info for an applied transaction', async () => {
-    const verifier = new TransactionVerifier(new FakeHorizon([successRecord()]));
+    const verifier = new TransactionVerifier(
+      new FakeHorizon([successRecord()]),
+    );
     const result = await verifier.verifyTransaction(HASH);
 
     expect(result.status).toBe('success');
@@ -100,7 +107,10 @@ describe('TransactionVerifier.verifyTransaction', () => {
   it('prefers result_codes from the record when present', async () => {
     const record = successRecord({
       successful: false,
-      result_codes: { transaction: 'tx_failed', operations: ['op_underfunded'] },
+      result_codes: {
+        transaction: 'tx_failed',
+        operations: ['op_underfunded'],
+      },
     });
     const verifier = new TransactionVerifier(new FakeHorizon([record]));
     const result = await verifier.verifyTransaction(HASH);
@@ -184,7 +194,10 @@ describe('TransactionVerifier.waitForTransaction', () => {
   });
 
   it('surfaces a failed transaction discovered mid-poll', async () => {
-    const failed = successRecord({ successful: false, result_xdr: resultXdrWithCode(-1) });
+    const failed = successRecord({
+      successful: false,
+      result_xdr: resultXdrWithCode(-1),
+    });
     const horizon = new FakeHorizon([null, failed]);
     const verifier = new TransactionVerifier(horizon);
     const clock = fakeClock();
@@ -203,13 +216,21 @@ describe('TransactionVerifier.waitForTransaction', () => {
 
 describe('decodeTransactionResultCode', () => {
   it('decodes known transaction result codes', () => {
-    expect(decodeTransactionResultCode(resultXdrWithCode(-1))).toBe('tx_failed');
-    expect(decodeTransactionResultCode(resultXdrWithCode(-9))).toBe('tx_insufficient_fee');
-    expect(decodeTransactionResultCode(resultXdrWithCode(-17))).toBe('tx_soroban_invalid');
+    expect(decodeTransactionResultCode(resultXdrWithCode(-1))).toBe(
+      'tx_failed',
+    );
+    expect(decodeTransactionResultCode(resultXdrWithCode(-9))).toBe(
+      'tx_insufficient_fee',
+    );
+    expect(decodeTransactionResultCode(resultXdrWithCode(-17))).toBe(
+      'tx_soroban_invalid',
+    );
   });
 
   it('labels unknown codes without throwing', () => {
-    expect(decodeTransactionResultCode(resultXdrWithCode(-99))).toBe('tx_unknown_code_-99');
+    expect(decodeTransactionResultCode(resultXdrWithCode(-99))).toBe(
+      'tx_unknown_code_-99',
+    );
   });
 
   it('returns undefined for garbage input', () => {
@@ -220,34 +241,51 @@ describe('decodeTransactionResultCode', () => {
 
 describe('HttpHorizonReader', () => {
   function fakeFetch(status: number, body: unknown): FetchLike {
-    return async () => ({
-      status,
-      ok: status >= 200 && status < 300,
-      json: async () => body,
-    });
+    return () =>
+      Promise.resolve({
+        status,
+        ok: status >= 200 && status < 300,
+        json: () => Promise.resolve(body),
+      });
   }
 
   it('returns null for 404 (transaction not yet ingested)', async () => {
-    const reader = new HttpHorizonReader('https://horizon.example', fakeFetch(404, {}));
+    const reader = new HttpHorizonReader(
+      'https://horizon.example',
+      fakeFetch(404, {}),
+    );
     expect(await reader.getTransaction(HASH)).toBeNull();
   });
 
   it('returns the record on 200', async () => {
     const record = successRecord();
-    const reader = new HttpHorizonReader('https://horizon.example/', fakeFetch(200, record));
+    const reader = new HttpHorizonReader(
+      'https://horizon.example/',
+      fakeFetch(200, record),
+    );
     expect(await reader.getTransaction(HASH)).toEqual(record);
   });
 
   it('throws HorizonRequestError on server errors', async () => {
-    const reader = new HttpHorizonReader('https://horizon.example', fakeFetch(500, {}));
-    await expect(reader.getTransaction(HASH)).rejects.toThrow(HorizonRequestError);
+    const reader = new HttpHorizonReader(
+      'https://horizon.example',
+      fakeFetch(500, {}),
+    );
+    await expect(reader.getTransaction(HASH)).rejects.toThrow(
+      HorizonRequestError,
+    );
   });
 
   it('reads the latest ledger from the embedded records', async () => {
     const body = {
-      _embedded: { records: [{ sequence: 999, closed_at: '2026-07-21T10:00:00Z' }] },
+      _embedded: {
+        records: [{ sequence: 999, closed_at: '2026-07-21T10:00:00Z' }],
+      },
     };
-    const reader = new HttpHorizonReader('https://horizon.example', fakeFetch(200, body));
+    const reader = new HttpHorizonReader(
+      'https://horizon.example',
+      fakeFetch(200, body),
+    );
     expect(await reader.getLatestLedger()).toEqual({
       sequence: 999,
       closedAt: '2026-07-21T10:00:00Z',

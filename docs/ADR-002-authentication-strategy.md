@@ -68,5 +68,5 @@ not an unlimited pass-through.
   build to `src/**` only. The Drizzle-backed wiring (`AuthService` +
   concrete repositories) therefore lives in `server.ts` at the repo root,
   run via `tsx` like the other `db/*` scripts, not compiled by `npm run
-  build`. `src/app.ts` takes `AuthService` as a parameter instead of
+build`. `src/app.ts` takes `AuthService` as a parameter instead of
   constructing it.

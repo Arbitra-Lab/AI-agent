@@ -1,9 +1,9 @@
 ---
 name: ⚡ Performance Issue
 about: Report performance problems or optimization opportunities
-title: "[PERF] Brief description of the performance issue"
+title: '[PERF] Brief description of the performance issue'
 labels: performance
-assignees: ""
+assignees: ''
 ---
 
 ## 📝 Description
@@ -50,7 +50,7 @@ assignees: ""
 - [ ] Memory usage
 - [ ] CPU usage
 - [ ] Build time
-- [ ] Other: **______**
+- [ ] Other: **\______**
 
 ## 🔗 Related Issues
 

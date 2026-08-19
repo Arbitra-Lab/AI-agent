@@ -45,7 +45,8 @@ describe('Soroban Type Utils', () => {
 
   describe('Address Validation', () => {
     it('should validate correct Stellar addresses', () => {
-      const validAddr = 'GBUQWP3BOUZX34LOCALNAME6QSN6FBLTZWMNNYHEI5HP2DGTX5DXV6EA';
+      const validAddr =
+        'GBUQWP3BOUZX34LOCALNAME6QSN6FBLTZWMNNYHEI5HP2DGTX5DXV6EA';
       expect(isValidStellarAddress(validAddr)).toBe(true);
     });
 

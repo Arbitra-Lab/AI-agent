@@ -38,11 +38,11 @@ cp .env.example .env
 
 Required environment variables:
 
-| Variable | Description |
-|---|---|
-| `OPENAI_API_KEY` | OpenAI API key for AI features |
-| `DATABASE_URL` | PostgreSQL connection string |
-| `REDIS_URL` | Redis connection string |
+| Variable             | Description                                  |
+| -------------------- | -------------------------------------------- |
+| `OPENAI_API_KEY`     | OpenAI API key for AI features               |
+| `DATABASE_URL`       | PostgreSQL connection string                 |
+| `REDIS_URL`          | Redis connection string                      |
 | `STELLAR_SECRET_KEY` | Stellar secret key for blockchain operations |
 
 5. Start the development server:

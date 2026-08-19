@@ -1,9 +1,9 @@
 ---
 name: 📚 Documentation
 about: Improve or add documentation
-title: "[DOCS] Brief description of documentation needed"
+title: '[DOCS] Brief description of documentation needed'
 labels: documentation
-assignees: ""
+assignees: ''
 ---
 
 ## 📝 Description
@@ -21,7 +21,7 @@ assignees: ""
 - [ ] Setup Guide
 - [ ] Agent Documentation
 - [ ] Blockchain Integration Guide
-- [ ] Other: **______**
+- [ ] Other: **\______**
 
 ## 📋 Content Outline
 

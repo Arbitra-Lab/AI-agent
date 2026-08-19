@@ -35,7 +35,9 @@ const TRANSACTION_RESULT_CODES: Record<number, string> = {
  * base64 TransactionResult XDR. Returns undefined if the XDR cannot be
  * parsed — callers still have the raw XDR for debugging.
  */
-export function decodeTransactionResultCode(resultXdr: string): string | undefined {
+export function decodeTransactionResultCode(
+  resultXdr: string,
+): string | undefined {
   try {
     const bytes = Buffer.from(resultXdr, 'base64');
     if (bytes.length < 12) return undefined;

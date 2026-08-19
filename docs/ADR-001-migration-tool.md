@@ -20,35 +20,35 @@ needed to version-control schema changes and enable reproducible deployments.
 
 ### Option A: Drizzle Kit ✅ (chosen)
 
-| Criterion | Assessment |
-|-----------|-----------|
-| TypeScript-native | ✅ Schema defined in `.ts` files — type-safe at compile time |
-| Migration generation | ✅ `drizzle-kit generate` produces SQL migration files |
-| Migration execution | ✅ `drizzle-orm/migrator` applies migrations programmatically |
-| Rollback support | ⚠️ No automatic down-migrations; rollback via journal deletion + manual SQL |
-| Studio UI | ✅ `drizzle-kit studio` for local inspection |
-| Bundle size | ✅ Lightweight — no runtime ORM overhead if raw SQL preferred |
-| Ecosystem fit | ✅ Works well with Node.js + TypeScript + `pg` driver |
+| Criterion            | Assessment                                                                  |
+| -------------------- | --------------------------------------------------------------------------- |
+| TypeScript-native    | ✅ Schema defined in `.ts` files — type-safe at compile time                |
+| Migration generation | ✅ `drizzle-kit generate` produces SQL migration files                      |
+| Migration execution  | ✅ `drizzle-orm/migrator` applies migrations programmatically               |
+| Rollback support     | ⚠️ No automatic down-migrations; rollback via journal deletion + manual SQL |
+| Studio UI            | ✅ `drizzle-kit studio` for local inspection                                |
+| Bundle size          | ✅ Lightweight — no runtime ORM overhead if raw SQL preferred               |
+| Ecosystem fit        | ✅ Works well with Node.js + TypeScript + `pg` driver                       |
 
 ### Option B: node-pg-migrate
 
-| Criterion | Assessment |
-|-----------|-----------|
-| TypeScript-native | ⚠️ JS-first; TS support requires extra config |
-| Migration generation | ❌ Manual — no auto-generation from schema |
-| Up/down migrations | ✅ Explicit up/down functions per migration file |
-| Maturity | ✅ Battle-tested, widely used |
-| Type safety | ❌ No schema-to-type inference |
+| Criterion            | Assessment                                       |
+| -------------------- | ------------------------------------------------ |
+| TypeScript-native    | ⚠️ JS-first; TS support requires extra config    |
+| Migration generation | ❌ Manual — no auto-generation from schema       |
+| Up/down migrations   | ✅ Explicit up/down functions per migration file |
+| Maturity             | ✅ Battle-tested, widely used                    |
+| Type safety          | ❌ No schema-to-type inference                   |
 
 ### Option C: Prisma Migrate
 
-| Criterion | Assessment |
-|-----------|-----------|
-| TypeScript-native | ✅ |
-| Migration generation | ✅ `prisma migrate dev` |
-| Type safety | ✅ Full type inference |
-| Bundle size | ❌ Large runtime; Prisma Client adds ~20MB |
-| Raw SQL flexibility | ⚠️ Limited compared to Drizzle |
+| Criterion             | Assessment                                       |
+| --------------------- | ------------------------------------------------ |
+| TypeScript-native     | ✅                                               |
+| Migration generation  | ✅ `prisma migrate dev`                          |
+| Type safety           | ✅ Full type inference                           |
+| Bundle size           | ❌ Large runtime; Prisma Client adds ~20MB       |
+| Raw SQL flexibility   | ⚠️ Limited compared to Drizzle                   |
 | Drizzle compatibility | ❌ Would require migrating away from drizzle-orm |
 
 ## Rationale

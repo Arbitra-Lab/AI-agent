@@ -16,23 +16,22 @@ class FakeAuthorizationRepository implements AuthorizationRepository {
     private readonly disputeArbiters: Map<string, Set<string>>,
   ) {}
 
-  async resolveUserId(identifier: string): Promise<string | null> {
-    return this.knownUsers.has(identifier) ? identifier : null;
+  resolveUserId(identifier: string): Promise<string | null> {
+    return Promise.resolve(this.knownUsers.has(identifier) ? identifier : null);
   }
 
-  async isPartyToAgreement(
-    userId: string,
-    agreementId: string,
-  ): Promise<boolean> {
+  isPartyToAgreement(userId: string, agreementId: string): Promise<boolean> {
     const parties = this.agreementParties.get(agreementId);
-    return !!parties && parties.includes(userId);
+    return Promise.resolve(!!parties && parties.includes(userId));
   }
 
-  async isArbiterAssignedToDispute(
+  isArbiterAssignedToDispute(
     userId: string,
     disputeId: string,
   ): Promise<boolean> {
-    return this.disputeArbiters.get(disputeId)?.has(userId) ?? false;
+    return Promise.resolve(
+      this.disputeArbiters.get(disputeId)?.has(userId) ?? false,
+    );
   }
 }
 

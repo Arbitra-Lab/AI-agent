@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool } from 'pg';
 
 /**
  * A dedicated Postgres pool for the running server (readiness checks today,
@@ -16,9 +16,8 @@ export const pool = new Pool({
   connectionTimeoutMillis: 5_000,
 });
 
-pool.on("error", (err) => {
-  // eslint-disable-next-line no-console
-  console.error("[db] unexpected error on idle client", err);
+pool.on('error', (err) => {
+  console.error('[db] unexpected error on idle client', err);
 });
 
 export async function closeDb(): Promise<void> {

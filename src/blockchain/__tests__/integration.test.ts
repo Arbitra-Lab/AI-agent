@@ -44,7 +44,9 @@ describe('EscrowContractClient', () => {
         fail('Expected EscrowError');
       } catch (error) {
         expect(error).toBeInstanceOf(EscrowError);
-        expect((error as EscrowError).code).toBe(EscrowErrorCode.ESCROW_NOT_FOUND);
+        expect((error as EscrowError).code).toBe(
+          EscrowErrorCode.ESCROW_NOT_FOUND,
+        );
       }
     });
   });
@@ -64,7 +66,8 @@ describe('EscrowContractClient', () => {
           party2,
           amount: BigInt(1000000000), // 100 USDC
           assetCode: 'USDC',
-          assetIssuer: 'GAQAA5Z4K6GGVRCNLVHT3D3YX3KYKU5LWY246ROYS33V7F7R5CALS63P',
+          assetIssuer:
+            'GAQAA5Z4K6GGVRCNLVHT3D3YX3KYKU5LWY246ROYS33V7F7R5CALS63P',
           timeoutSeconds: 86400,
           signingKey: testKey,
         });
@@ -88,7 +91,9 @@ describe('Soroban Type Utilities', () => {
   describe('isValidStellarAddress', () => {
     it('should validate valid Stellar addresses', () => {
       expect(
-        isValidStellarAddress('GAQAA5Z4K6GGVRCNLVHT3D3YX3KYKU5LWY246ROYS33V7F7R5CALS63P'),
+        isValidStellarAddress(
+          'GAQAA5Z4K6GGVRCNLVHT3D3YX3KYKU5LWY246ROYS33V7F7R5CALS63P',
+        ),
       ).toBe(true);
       expect(isValidStellarAddress('GA')).toBe(false);
       expect(isValidStellarAddress('GBUQWP3BOUZX34LOCALNAME')).toBe(false);

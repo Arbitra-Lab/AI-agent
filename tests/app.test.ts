@@ -32,7 +32,7 @@ describe('GET /health', () => {
     const app = createApp();
     await request(app).get('/health');
 
-    expect(pool.query).not.toHaveBeenCalled();
+    expect((pool.query as jest.Mock).mock.calls.length).toBe(0);
     expect(pingRedis).not.toHaveBeenCalled();
   });
 });
@@ -43,7 +43,9 @@ describe('GET /ready', () => {
   });
 
   it('returns 200 when Postgres and Redis are both reachable', async () => {
-    (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ '?column?': 1 }] });
+    (pool.query as jest.Mock).mockResolvedValueOnce({
+      rows: [{ '?column?': 1 }],
+    });
     (pingRedis as jest.Mock).mockResolvedValueOnce(true);
 
     const app = createApp();
@@ -57,7 +59,9 @@ describe('GET /ready', () => {
   });
 
   it('returns 503 when Postgres is unreachable', async () => {
-    (pool.query as jest.Mock).mockRejectedValueOnce(new Error('connection refused'));
+    (pool.query as jest.Mock).mockRejectedValueOnce(
+      new Error('connection refused'),
+    );
     (pingRedis as jest.Mock).mockResolvedValueOnce(true);
 
     const app = createApp();
@@ -71,7 +75,9 @@ describe('GET /ready', () => {
   });
 
   it('returns 503 when Redis is unreachable', async () => {
-    (pool.query as jest.Mock).mockResolvedValueOnce({ rows: [{ '?column?': 1 }] });
+    (pool.query as jest.Mock).mockResolvedValueOnce({
+      rows: [{ '?column?': 1 }],
+    });
     (pingRedis as jest.Mock).mockResolvedValueOnce(false);
 
     const app = createApp();
@@ -85,7 +91,9 @@ describe('GET /ready', () => {
   });
 
   it('returns 503 when both are unreachable', async () => {
-    (pool.query as jest.Mock).mockRejectedValueOnce(new Error('connection refused'));
+    (pool.query as jest.Mock).mockRejectedValueOnce(
+      new Error('connection refused'),
+    );
     (pingRedis as jest.Mock).mockResolvedValueOnce(false);
 
     const app = createApp();
@@ -110,9 +118,7 @@ describe('security middleware', () => {
     // Body well over the 1mb limit configured in createApp().
     const oversizedPayload = { data: 'x'.repeat(2 * 1024 * 1024) };
 
-    const res = await request(app)
-      .post('/health')
-      .send(oversizedPayload);
+    const res = await request(app).post('/health').send(oversizedPayload);
 
     // /health only handles GET, so this also exercises the request pipeline
     // (body parser rejects oversized payload before reaching a route).

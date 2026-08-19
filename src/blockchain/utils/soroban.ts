@@ -9,7 +9,7 @@
  */
 export function stringToBytes32(value: string): Uint8Array {
   // Remove 0x prefix if present
-  let hex = value.startsWith('0x') ? value.slice(2) : value;
+  const hex = value.startsWith('0x') ? value.slice(2) : value;
 
   // Validate hex format
   if (!/^[0-9a-fA-F]*$/.test(hex)) {
@@ -80,10 +80,7 @@ export function validateAmount(amount: unknown): bigint {
 /**
  * Format amount for display (assuming stroops/8 decimal places)
  */
-export function formatAmount(
-  amount: bigint,
-  decimals: number = 7,
-): string {
+export function formatAmount(amount: bigint, decimals: number = 7): string {
   const factor = BigInt(Math.pow(10, decimals));
   const whole = amount / factor;
   const remainder = amount % factor;
@@ -99,10 +96,7 @@ export function formatAmount(
 /**
  * Parse amount from string (assuming stroops/7 decimal places)
  */
-export function parseAmount(
-  amountStr: string,
-  decimals: number = 7,
-): bigint {
+export function parseAmount(amountStr: string, decimals: number = 7): bigint {
   const parts = amountStr.split('.');
   if (parts.length > 2) {
     throw new Error('Invalid amount format');
@@ -139,7 +133,10 @@ export function createAssetId(code: string, issuer: string): string {
 /**
  * Parse asset identifier string
  */
-export function parseAssetId(assetId: string): { code: string; issuer: string } {
+export function parseAssetId(assetId: string): {
+  code: string;
+  issuer: string;
+} {
   const parts = assetId.split(':');
   if (parts.length !== 2) {
     throw new Error('Invalid asset ID format');

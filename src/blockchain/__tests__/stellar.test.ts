@@ -5,6 +5,7 @@
 
 import {
   Account,
+  Asset,
   Horizon,
   Keypair,
   Networks,
@@ -45,11 +46,17 @@ function horizonHttpError(
   return error;
 }
 
-function fakeServer(overrides: Partial<HorizonServerLike> = {}): HorizonServerLike {
+function fakeServer(
+  overrides: Partial<HorizonServerLike> = {},
+): HorizonServerLike {
   return {
-    loadAccount: jest.fn().mockRejectedValue(new Error('loadAccount not stubbed')),
+    loadAccount: jest
+      .fn()
+      .mockRejectedValue(new Error('loadAccount not stubbed')),
     feeStats: jest.fn().mockRejectedValue(new Error('feeStats not stubbed')),
-    submitTransaction: jest.fn().mockRejectedValue(new Error('submitTransaction not stubbed')),
+    submitTransaction: jest
+      .fn()
+      .mockRejectedValue(new Error('submitTransaction not stubbed')),
     transactions: jest.fn(() => ({
       transaction: jest.fn(() => ({
         call: jest.fn().mockRejectedValue(horizonHttpError(404)),
@@ -59,11 +66,14 @@ function fakeServer(overrides: Partial<HorizonServerLike> = {}): HorizonServerLi
   };
 }
 
-function client(server: HorizonServerLike, options: { secretKey?: string } = {}): StellarClient {
+function client(
+  server: HorizonServerLike,
+  options: { secretKey?: string } = {},
+): StellarClient {
   return new StellarClient({
     config: TESTNET_CONFIG,
     server,
-    sleep: async () => undefined, // no real waiting in tests
+    sleep: () => Promise.resolve(undefined), // no real waiting in tests
     ...options,
   });
 }
@@ -78,7 +88,7 @@ function signedTransaction(timeoutSeconds = 300) {
   }).addOperation(
     Operation.payment({
       destination: SIGNER.publicKey(),
-      asset: require('@stellar/stellar-sdk').Asset.native(),
+      asset: Asset.native(),
       amount: '1',
     }),
   );
@@ -97,18 +107,28 @@ describe('loadStellarConfig', () => {
   });
 
   it('respects STELLAR_HORIZON_URL and trims trailing slashes', () => {
-    const config = loadStellarConfig({ STELLAR_HORIZON_URL: 'https://my-horizon.example/' });
+    const config = loadStellarConfig({
+      STELLAR_HORIZON_URL: 'https://my-horizon.example/',
+    });
     expect(config.horizonUrl).toBe('https://my-horizon.example');
   });
 
   it('refuses to boot on mainnet without the explicit STELLAR_ALLOW_MAINNET opt-in', () => {
-    expect(() => loadStellarConfig({ STELLAR_NETWORK: 'mainnet' })).toThrow(StellarConfigError);
+    expect(() => loadStellarConfig({ STELLAR_NETWORK: 'mainnet' })).toThrow(
+      StellarConfigError,
+    );
     // Truthy-looking values are not enough — only the literal 'true'.
     expect(() =>
-      loadStellarConfig({ STELLAR_NETWORK: 'mainnet', STELLAR_ALLOW_MAINNET: '1' }),
+      loadStellarConfig({
+        STELLAR_NETWORK: 'mainnet',
+        STELLAR_ALLOW_MAINNET: '1',
+      }),
     ).toThrow(StellarConfigError);
     expect(() =>
-      loadStellarConfig({ STELLAR_NETWORK: 'mainnet', STELLAR_ALLOW_MAINNET: 'TRUE' }),
+      loadStellarConfig({
+        STELLAR_NETWORK: 'mainnet',
+        STELLAR_ALLOW_MAINNET: 'TRUE',
+      }),
     ).toThrow(StellarConfigError);
   });
 
@@ -123,20 +143,24 @@ describe('loadStellarConfig', () => {
   });
 
   it("treats 'public' as mainnet, including the opt-in gate", () => {
-    expect(() => loadStellarConfig({ STELLAR_NETWORK: 'public' })).toThrow(StellarConfigError);
+    expect(() => loadStellarConfig({ STELLAR_NETWORK: 'public' })).toThrow(
+      StellarConfigError,
+    );
   });
 
   it('rejects unknown networks', () => {
-    expect(() => loadStellarConfig({ STELLAR_NETWORK: 'futurenet' })).toThrow(StellarConfigError);
+    expect(() => loadStellarConfig({ STELLAR_NETWORK: 'futurenet' })).toThrow(
+      StellarConfigError,
+    );
   });
 
   it('rejects malformed numeric overrides', () => {
-    expect(() => loadStellarConfig({ STELLAR_MAX_FEE_STROOPS: 'lots' })).toThrow(
-      StellarConfigError,
-    );
-    expect(() => loadStellarConfig({ STELLAR_TX_TIMEOUT_SECONDS: '-5' })).toThrow(
-      StellarConfigError,
-    );
+    expect(() =>
+      loadStellarConfig({ STELLAR_MAX_FEE_STROOPS: 'lots' }),
+    ).toThrow(StellarConfigError);
+    expect(() =>
+      loadStellarConfig({ STELLAR_TX_TIMEOUT_SECONDS: '-5' }),
+    ).toThrow(StellarConfigError);
   });
 });
 
@@ -172,7 +196,9 @@ describe('secret key handling', () => {
   it('refuses to sign when no key is configured', () => {
     const c = client(fakeServer());
     expect(c.hasSigningKey).toBe(false);
-    expect(() => c.signTransaction(signedTransaction())).toThrow(StellarConfigError);
+    expect(() => c.signTransaction(signedTransaction())).toThrow(
+      StellarConfigError,
+    );
   });
 });
 
@@ -202,14 +228,18 @@ describe('estimateFee', () => {
     const server = fakeServer({
       feeStats: jest.fn().mockResolvedValue(feeStatsResponse('2500000')),
     });
-    expect(await client(server).estimateFee()).toBe(TESTNET_CONFIG.maxFeeStroops);
+    expect(await client(server).estimateFee()).toBe(
+      TESTNET_CONFIG.maxFeeStroops,
+    );
   });
 
   it('falls back to the configured base fee when fee stats are unavailable', async () => {
     const server = fakeServer({
       feeStats: jest.fn().mockRejectedValue(new Error('connect ETIMEDOUT')),
     });
-    expect(await client(server).estimateFee()).toBe(TESTNET_CONFIG.baseFeeStroops);
+    expect(await client(server).estimateFee()).toBe(
+      TESTNET_CONFIG.baseFeeStroops,
+    );
   });
 });
 
@@ -226,12 +256,19 @@ describe('accounts and balances', () => {
         },
       ],
     } as unknown as Horizon.AccountResponse;
-    const server = fakeServer({ loadAccount: jest.fn().mockResolvedValue(account) });
+    const server = fakeServer({
+      loadAccount: jest.fn().mockResolvedValue(account),
+    });
 
     const balances = await client(server).getBalances('GACCOUNT');
 
     expect(balances).toEqual([
-      { assetType: 'native', assetCode: undefined, assetIssuer: undefined, balance: '100.5000000' },
+      {
+        assetType: 'native',
+        assetCode: undefined,
+        assetIssuer: undefined,
+        balance: '100.5000000',
+      },
       {
         assetType: 'credit_alphanum4',
         assetCode: 'USDC',
@@ -255,14 +292,12 @@ describe('buildTransaction', () => {
   it('sets timebounds and a dynamically estimated fee', async () => {
     const account = new Account(SIGNER.publicKey(), '7');
     const server = fakeServer({
-      loadAccount: jest.fn().mockResolvedValue(account as unknown as Horizon.AccountResponse),
+      loadAccount: jest.fn().mockResolvedValue(account),
       feeStats: jest.fn().mockResolvedValue({
         last_ledger_base_fee: '100',
         fee_charged: { p50: '250' },
-      } as unknown as Horizon.HorizonApi.FeeStatsResponse),
+      }),
     });
-    const { Asset } = require('@stellar/stellar-sdk');
-
     const tx = await client(server).buildTransaction(SIGNER.publicKey(), [
       Operation.payment({
         destination: SIGNER.publicKey(),
@@ -280,17 +315,22 @@ describe('buildTransaction', () => {
 
 describe('submitTransaction', () => {
   it('refuses unbounded transactions outright', async () => {
-    const unbounded = new TransactionBuilder(new Account(SIGNER.publicKey(), '0'), {
-      fee: '100',
-      networkPassphrase: Networks.TESTNET,
-    })
+    const unbounded = new TransactionBuilder(
+      new Account(SIGNER.publicKey(), '0'),
+      {
+        fee: '100',
+        networkPassphrase: Networks.TESTNET,
+      },
+    )
       .addOperation(Operation.bumpSequence({ bumpTo: '1' }))
       .setTimeout(0) // TimeoutInfinite — no upper timebound
       .build();
 
     const server = fakeServer();
-    await expect(client(server).submitTransaction(unbounded)).rejects.toThrow(/unbounded/i);
-    expect(server.submitTransaction).not.toHaveBeenCalled();
+    await expect(client(server).submitTransaction(unbounded)).rejects.toThrow(
+      /unbounded/i,
+    );
+    expect((server.submitTransaction as jest.Mock).mock.calls.length).toBe(0);
   });
 
   it('returns hash and ledger on success', async () => {
@@ -318,7 +358,11 @@ describe('submitTransaction', () => {
       .fn()
       .mockRejectedValueOnce(horizonHttpError(504))
       .mockRejectedValueOnce(horizonHttpError(504))
-      .mockResolvedValue({ hash: tx.hash().toString('hex'), ledger: 9, successful: true });
+      .mockResolvedValue({
+        hash: tx.hash().toString('hex'),
+        ledger: 9,
+        successful: true,
+      });
     const server = fakeServer({ submitTransaction: submit });
 
     const result = await client(server).submitTransaction(tx);
@@ -347,7 +391,9 @@ describe('submitTransaction', () => {
   it('does not retry non-retryable failures', async () => {
     const tx = signedTransaction();
     const submit = jest.fn().mockRejectedValue(
-      horizonHttpError(400, { result_codes: { transaction: 'tx_insufficient_fee' } }),
+      horizonHttpError(400, {
+        result_codes: { transaction: 'tx_insufficient_fee' },
+      }),
     );
     const server = fakeServer({ submitTransaction: submit });
 
@@ -363,7 +409,9 @@ describe('submitTransaction', () => {
     const submit = jest
       .fn()
       .mockRejectedValueOnce(horizonHttpError(504))
-      .mockRejectedValue(horizonHttpError(400, { result_codes: { transaction: 'tx_bad_seq' } }));
+      .mockRejectedValue(
+        horizonHttpError(400, { result_codes: { transaction: 'tx_bad_seq' } }),
+      );
     const transactionCall = jest.fn().mockResolvedValue({
       successful: true,
       ledger_attr: 777,
@@ -380,14 +428,21 @@ describe('submitTransaction', () => {
 
     const result = await client(server).submitTransaction(tx);
 
-    expect(result).toEqual({ hash, ledger: 777, successful: true, alreadyApplied: true });
+    expect(result).toEqual({
+      hash,
+      ledger: 777,
+      successful: true,
+      alreadyApplied: true,
+    });
   });
 
   it('surfaces genuine tx_bad_seq with result_codes preserved', async () => {
     const tx = signedTransaction();
     const submit = jest
       .fn()
-      .mockRejectedValue(horizonHttpError(400, { result_codes: { transaction: 'tx_bad_seq' } }));
+      .mockRejectedValue(
+        horizonHttpError(400, { result_codes: { transaction: 'tx_bad_seq' } }),
+      );
     const server = fakeServer({ submitTransaction: submit }); // hash lookup 404s
 
     try {
@@ -395,7 +450,9 @@ describe('submitTransaction', () => {
       fail('expected StellarHorizonError');
     } catch (error) {
       expect(error).toBeInstanceOf(StellarHorizonError);
-      expect((error as StellarHorizonError).resultCodes).toEqual({ transaction: 'tx_bad_seq' });
+      expect((error as StellarHorizonError).resultCodes).toEqual({
+        transaction: 'tx_bad_seq',
+      });
       expect((error as StellarHorizonError).isRetryable).toBe(false);
     }
     expect(submit).toHaveBeenCalledTimes(1);
@@ -406,7 +463,10 @@ describe('mapHorizonError', () => {
   it('preserves result_codes including operation codes', () => {
     const mapped = mapHorizonError(
       horizonHttpError(400, {
-        result_codes: { transaction: 'tx_failed', operations: ['op_underfunded', 'op_success'] },
+        result_codes: {
+          transaction: 'tx_failed',
+          operations: ['op_underfunded', 'op_success'],
+        },
       }),
     );
     expect(mapped).toBeInstanceOf(StellarHorizonError);

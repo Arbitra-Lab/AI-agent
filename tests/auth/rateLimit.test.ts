@@ -6,15 +6,15 @@ import { RateLimitError, ServiceUnavailableError } from '../../src/lib/errors';
 class FakeRateLimitStore implements RateLimitStore {
   private counts = new Map<string, number>();
 
-  async hit(key: string, windowMs: number): Promise<RateLimitHit> {
+  hit(key: string, windowMs: number): Promise<RateLimitHit> {
     const count = (this.counts.get(key) ?? 0) + 1;
     this.counts.set(key, count);
-    return { count, ttlMs: windowMs };
+    return Promise.resolve({ count, ttlMs: windowMs });
   }
 }
 
 class FailingRateLimitStore implements RateLimitStore {
-  async hit(): Promise<RateLimitHit> {
+  hit(): Promise<RateLimitHit> {
     throw new Error('connect ECONNREFUSED 127.0.0.1:6379');
   }
 }
@@ -51,10 +51,10 @@ describe('createRateLimiter', () => {
     await limiter(req, res, next);
 
     expect(next).toHaveBeenLastCalledWith(expect.any(RateLimitError));
-    expect(res.setHeader).toHaveBeenCalledWith(
+    expect((res.setHeader as jest.Mock).mock.calls).toContainEqual([
       'Retry-After',
       expect.any(String),
-    );
+    ]);
   });
 
   it('keys by authenticated user id, isolating separate users', async () => {
@@ -100,9 +100,9 @@ describe('createRateLimiter', () => {
     await limiter(req, res, next);
 
     expect(next).toHaveBeenCalledWith(expect.any(ServiceUnavailableError));
-    expect(res.setHeader).toHaveBeenCalledWith(
+    expect((res.setHeader as jest.Mock).mock.calls).toContainEqual([
       'Retry-After',
       expect.any(String),
-    );
+    ]);
   });
 });

@@ -1,7 +1,7 @@
-import { and, eq, or } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { agreements, arbiters, disputes, disputeVotes, users } from "../schema";
-import type { AuthorizationRepository } from "../../src/auth/authorize";
+import { and, eq, or } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { agreements, arbiters, disputes, disputeVotes, users } from '../schema';
+import type { AuthorizationRepository } from '../../src/auth/authorize';
 
 /**
  * "Assigned" arbiter today means: an active arbiter with a dispute_votes
@@ -23,21 +23,27 @@ export class DrizzleAuthorizationRepository implements AuthorizationRepository {
     return rows[0]?.id ?? null;
   }
 
-  async isPartyToAgreement(userId: string, agreementId: string): Promise<boolean> {
+  async isPartyToAgreement(
+    userId: string,
+    agreementId: string,
+  ): Promise<boolean> {
     const rows = await this.db
       .select({ id: agreements.id })
       .from(agreements)
       .where(
         and(
           eq(agreements.id, agreementId),
-          or(eq(agreements.partyA, userId), eq(agreements.partyB, userId))
-        )
+          or(eq(agreements.partyA, userId), eq(agreements.partyB, userId)),
+        ),
       )
       .limit(1);
     return rows.length > 0;
   }
 
-  async isArbiterAssignedToDispute(userId: string, disputeId: string): Promise<boolean> {
+  async isArbiterAssignedToDispute(
+    userId: string,
+    disputeId: string,
+  ): Promise<boolean> {
     const arbiterRows = await this.db
       .select({ id: arbiters.id })
       .from(arbiters)
@@ -56,7 +62,12 @@ export class DrizzleAuthorizationRepository implements AuthorizationRepository {
     const voteRows = await this.db
       .select({ id: disputeVotes.id })
       .from(disputeVotes)
-      .where(and(eq(disputeVotes.disputeId, disputeId), eq(disputeVotes.arbiterId, arbiter.id)))
+      .where(
+        and(
+          eq(disputeVotes.disputeId, disputeId),
+          eq(disputeVotes.arbiterId, arbiter.id),
+        ),
+      )
       .limit(1);
     return voteRows.length > 0;
   }

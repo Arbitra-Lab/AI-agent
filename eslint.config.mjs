@@ -11,7 +11,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.js', 'node_modules/**', 'dist/**', 'coverage/**'],
+    ignores: ['eslint.config.mjs', 'node_modules/**', 'dist/**', 'coverage/**'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -23,7 +23,7 @@ export default tseslint.config(
       },
       sourceType: 'module',
       parserOptions: {
-        projectService: true,
+        project: './tsconfig.eslint.json',
         tsconfigRootDir: __dirname,
       },
     },

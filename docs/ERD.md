@@ -154,18 +154,18 @@ erDiagram
 
 ## Table Descriptions
 
-| Table | Purpose |
-|-------|---------|
-| `users` | Identity, verification status, Stellar address, reputation |
-| `agreements` | Generic two-party agreement with `vertical` discriminator and JSONB `terms` |
-| `escrows` | On-chain escrow with NUMERIC money, asset code/issuer, state machine |
-| `disputes` | Case-agnostic arbitration with timeline and ruling |
-| `dispute_evidence` | Tamper-evident evidence with content hash |
-| `arbiters` | Verified arbiters with weighted voting |
-| `dispute_votes` | Arbiter votes with weight snapshot |
-| `conversations` | Agent chat sessions with optional context linkage |
-| `messages` | Individual chat messages with role and tool support |
-| `listings` | **Rental reference implementation** — isolated from core tables |
+| Table              | Purpose                                                                     |
+| ------------------ | --------------------------------------------------------------------------- |
+| `users`            | Identity, verification status, Stellar address, reputation                  |
+| `agreements`       | Generic two-party agreement with `vertical` discriminator and JSONB `terms` |
+| `escrows`          | On-chain escrow with NUMERIC money, asset code/issuer, state machine        |
+| `disputes`         | Case-agnostic arbitration with timeline and ruling                          |
+| `dispute_evidence` | Tamper-evident evidence with content hash                                   |
+| `arbiters`         | Verified arbiters with weighted voting                                      |
+| `dispute_votes`    | Arbiter votes with weight snapshot                                          |
+| `conversations`    | Agent chat sessions with optional context linkage                           |
+| `messages`         | Individual chat messages with role and tool support                         |
+| `listings`         | **Rental reference implementation** — isolated from core tables             |
 
 ## Design Principles
 

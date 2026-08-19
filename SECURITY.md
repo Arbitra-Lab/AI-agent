@@ -19,9 +19,9 @@ We aim to acknowledge receipt within 48 hours and provide an initial assessment 
 ## Supported Versions
 
 | Version | Supported |
-|---|---|
-| latest | ✅ |
-| older | ❌ |
+| ------- | --------- |
+| latest  | ✅        |
+| older   | ❌        |
 
 ## Disclosure Policy
 

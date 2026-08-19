@@ -37,12 +37,14 @@ src/
 A strongly-typed wrapper around Soroban escrow contract operations:
 
 **Read Methods:**
+
 - `getEscrow(escrowId)` - Fetch escrow details
 - `getApprovalCount(escrowId)` - Get approval status
 - `getReleaseHistory(escrowId)` - Historical releases
 - `getTimeoutConfig(escrowId)` - Timeout configuration
 
 **Write Methods (all simulated before submission):**
+
 - `create()` - Create new escrow with parties and timeout
 - `fundEscrow()` - Fund existing escrow
 - `approveRelease()` - Approve full release
@@ -62,6 +64,7 @@ A strongly-typed wrapper around Soroban escrow contract operations:
 #### Type System (`src/blockchain/types/escrow.ts`)
 
 **Error Handling:**
+
 - `EscrowError` - Typed error class with code and details
 - `EscrowErrorCode` - Enum of contract error codes (20+ variants)
   - Access control (UNAUTHORIZED, NOT_PARTY, NOT_ARBITER)
@@ -71,6 +74,7 @@ A strongly-typed wrapper around Soroban escrow contract operations:
   - Release/Dispute (DISPUTED_CANNOT_RELEASE, etc.)
 
 **Data Types:**
+
 - `EscrowMetadata` - Escrow state snapshot
 - `ApprovalCount` - Multi-sig approval tracking
 - `ReleaseHistoryEntry` - Historical ledger
@@ -108,6 +112,7 @@ Reproducible, documented process for generating bindings:
 5. Output is committed so ABI drift is detected by CI
 
 Usage:
+
 ```bash
 npm run generate:escrow-bindings
 ```
@@ -131,6 +136,7 @@ npm run generate:escrow-bindings
 - Works against real testnet instance
 
 Run tests:
+
 ```bash
 npm test                    # Unit tests
 npm run test:integration    # Integration tests (requires ESCROW_CONTRACT_ID_TESTNET)
@@ -162,6 +168,7 @@ npm run test:integration    # Integration tests (requires ESCROW_CONTRACT_ID_TES
 ### ✅ Write methods implemented
 
 All with simulation:
+
 - `create()` - New escrow
 - `fundEscrow()` - Fund existing
 - `approveRelease()` - Full release approval
@@ -226,6 +233,7 @@ All with simulation:
 ### 1. Simulation Before Submission
 
 All write operations simulate first. This:
+
 - Prevents wasted gas on transactions that will fail
 - Surfaces errors early (before spending money)
 - Returns typed errors, not raw XDR strings
@@ -233,6 +241,7 @@ All write operations simulate first. This:
 ### 2. Bigint for Amounts
 
 Consistently use `bigint` to:
+
 - Prevent JavaScript `number` precision loss (e.g., 1e9 rounded)
 - Match contract's `i128` type semantics
 - Enable linting to catch `number` usage (strict typing)
@@ -240,6 +249,7 @@ Consistently use `bigint` to:
 ### 3. Generated Bindings, Not Hand-Written
 
 Rationale:
+
 - Auto-generated bindings can't drift from contract ABI
 - Stellar CLI keeps bindings up-to-date
 - Reduces maintenance burden
@@ -248,6 +258,7 @@ Rationale:
 ### 4. Per-Network Configuration
 
 Supports:
+
 - Different contract IDs per network (testnet, public)
 - Network-specific Horizon URLs
 - Environment variable override
@@ -256,16 +267,19 @@ Supports:
 ### 5. Typed Error Codes
 
 Instead of:
+
 ```typescript
 if (error.message.includes("not found")) { ... }
 ```
 
 Use:
+
 ```typescript
 if (error.code === EscrowErrorCode.ESCROW_NOT_FOUND) { ... }
 ```
 
 Benefits:
+
 - Type-safe error handling
 - Refactoring-safe (rename enum variant, get compile errors)
 - Better IDE autocompletion

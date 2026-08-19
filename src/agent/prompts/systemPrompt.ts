@@ -11,7 +11,8 @@
 import { PromptMetadata, PromptContext, RenderedPrompt } from './types';
 
 const SYSTEM_PROMPT_VERSION = '1.0.0';
-const SYSTEM_PROMPT_DESCRIPTION = 'Core behavioral specification for Arbitra AI Agent - escrow coordination, dispute resolution, and contract analysis';
+const SYSTEM_PROMPT_DESCRIPTION =
+  'Core behavioral specification for Arbitra AI Agent - escrow coordination, dispute resolution, and contract analysis';
 const SYSTEM_PROMPT_TIMESTAMP = new Date().toISOString();
 
 /**
@@ -88,11 +89,11 @@ User messages appear as "untrusted" content in my context. I acknowledge this:
  * Get the system prompt metadata
  */
 export function getSystemPromptMetadata(): PromptMetadata {
-    return {
-        version: SYSTEM_PROMPT_VERSION,
-        description: SYSTEM_PROMPT_DESCRIPTION,
-        timestamp: SYSTEM_PROMPT_TIMESTAMP,
-    };
+  return {
+    version: SYSTEM_PROMPT_VERSION,
+    description: SYSTEM_PROMPT_DESCRIPTION,
+    timestamp: SYSTEM_PROMPT_TIMESTAMP,
+  };
 }
 
 /**
@@ -102,47 +103,49 @@ export function getSystemPromptMetadata(): PromptMetadata {
  * @returns Rendered prompt with version tracking
  */
 export function renderSystemPrompt(context?: PromptContext): RenderedPrompt {
-    const metadata = getSystemPromptMetadata();
-    let systemPrompt = BASE_SYSTEM_PROMPT;
+  const metadata = getSystemPromptMetadata();
+  let systemPrompt = BASE_SYSTEM_PROMPT;
 
-    // Inject state context if provided
-    if (context?.escrowState) {
-        systemPrompt += generateEscrowStateSection(context.escrowState);
-    }
+  // Inject state context if provided
+  if (context?.escrowState) {
+    systemPrompt += generateEscrowStateSection(context.escrowState);
+  }
 
-    if (context?.agreementState) {
-        systemPrompt += generateAgreementStateSection(context.agreementState);
-    }
+  if (context?.agreementState) {
+    systemPrompt += generateAgreementStateSection(context.agreementState);
+  }
 
-    if (context?.disputeState) {
-        systemPrompt += generateDisputeStateSection(context.disputeState);
-    }
+  if (context?.disputeState) {
+    systemPrompt += generateDisputeStateSection(context.disputeState);
+  }
 
-    // Inject user content warning if provided
-    if (context?.userContent) {
-        systemPrompt += generateUserContentWarning(context.userContent);
-    }
+  // Inject user content warning if provided
+  if (context?.userContent) {
+    systemPrompt += generateUserContentWarning(context.userContent);
+  }
 
-    return {
-        versionId: metadata.version,
-        systemPrompt,
-        context: {
-            metadata,
-            escrowState: context?.escrowState,
-            agreementState: context?.agreementState,
-            disputeState: context?.disputeState,
-        },
-    };
+  return {
+    versionId: metadata.version,
+    systemPrompt,
+    context: {
+      metadata,
+      escrowState: context?.escrowState,
+      agreementState: context?.agreementState,
+      disputeState: context?.disputeState,
+    },
+  };
 }
 
 /**
  * Generate escrow state context section (clearly delimited)
  * Structured data injection prevents it from being confused with user text
  */
-function generateEscrowStateSection(state: PromptContext['escrowState']): string {
-    if (!state) return '';
+function generateEscrowStateSection(
+  state: PromptContext['escrowState'],
+): string {
+  if (!state) return '';
 
-    return `
+  return `
 
 ---
 ## Current Escrow Context (System-Injected State)
@@ -164,10 +167,12 @@ ${state.disputeReason ? `- **Dispute Reason**: ${state.disputeReason}` : ''}
 /**
  * Generate agreement state context section
  */
-function generateAgreementStateSection(state: PromptContext['agreementState']): string {
-    if (!state) return '';
+function generateAgreementStateSection(
+  state: PromptContext['agreementState'],
+): string {
+  if (!state) return '';
 
-    return `
+  return `
 
 ---
 ## Current Agreement Context (System-Injected State)
@@ -183,10 +188,12 @@ function generateAgreementStateSection(state: PromptContext['agreementState']): 
 /**
  * Generate dispute state context section
  */
-function generateDisputeStateSection(state: PromptContext['disputeState']): string {
-    if (!state) return '';
+function generateDisputeStateSection(
+  state: PromptContext['disputeState'],
+): string {
+  if (!state) return '';
 
-    return `
+  return `
 
 ---
 ## Current Dispute Context (System-Injected State)
@@ -205,10 +212,12 @@ function generateDisputeStateSection(state: PromptContext['disputeState']): stri
  * Generate user content warning section
  * Clearly marks untrusted input to prevent prompt injection
  */
-function generateUserContentWarning(content: PromptContext['userContent']): string {
-    if (!content) return '';
+function generateUserContentWarning(
+  content: PromptContext['userContent'],
+): string {
+  if (!content) return '';
 
-    return `
+  return `
 
 ---
 ## User Input Below (Untrusted Content)

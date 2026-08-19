@@ -1,6 +1,5 @@
 import { AnthropicProvider } from '../anthropic';
 import { OpenAIProvider } from '../openai';
-import { LLMProviderErrorCode } from '../errors';
 
 jest.mock('@anthropic-ai/sdk', () => {
   return jest.fn().mockImplementation(() => {
@@ -22,10 +21,12 @@ jest.mock('openai', () => {
       chat: {
         completions: {
           create: jest.fn().mockResolvedValue({
-            choices: [{
-              message: { content: 'OpenAI mock response' },
-              finish_reason: 'stop',
-            }],
+            choices: [
+              {
+                message: { content: 'OpenAI mock response' },
+                finish_reason: 'stop',
+              },
+            ],
             usage: { prompt_tokens: 10, completion_tokens: 5 },
           }),
         },
@@ -39,7 +40,7 @@ describe('LLM Providers', () => {
     it('should initialize and return a valid chat response', async () => {
       const provider = new AnthropicProvider('mock-key');
       const response = await provider.chat({
-        messages: [{ role: 'user', content: 'Hello' }]
+        messages: [{ role: 'user', content: 'Hello' }],
       });
 
       expect(response.message.content).toBe('Anthropic mock response');
@@ -51,7 +52,7 @@ describe('LLM Providers', () => {
     it('should initialize and return a valid chat response', async () => {
       const provider = new OpenAIProvider('mock-key');
       const response = await provider.chat({
-        messages: [{ role: 'user', content: 'Hello' }]
+        messages: [{ role: 'user', content: 'Hello' }],
       });
 
       expect(response.message.content).toBe('OpenAI mock response');

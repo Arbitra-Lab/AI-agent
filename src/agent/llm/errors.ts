@@ -18,7 +18,7 @@ export class LLMProviderError extends Error {
     code: LLMProviderErrorCode,
     provider: string,
     isRetryable: boolean,
-    details?: any
+    details?: any,
   ) {
     super(message);
     this.name = 'LLMProviderError';

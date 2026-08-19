@@ -7,14 +7,19 @@ import { ToolContext } from '../types/context';
  */
 export const getEscrowStatusTool: ToolDefinition = {
   name: 'get_escrow_status',
-  description: 'Get the status and details of a specific escrow agreement. Note: The agent cannot unilaterally move funds, as all operations require cryptographic signatures from the transaction parties.',
+  description:
+    'Get the status and details of a specific escrow agreement. Note: The agent cannot unilaterally move funds, as all operations require cryptographic signatures from the transaction parties.',
   mutating: false,
   requiresConfirmation: false,
-  execute: async (args: any, context: ToolContext) => {
+  execute: (args: any, context: ToolContext) => {
     if (!args || typeof args.escrowId !== 'string') {
-      throw new Error("Missing or invalid argument: 'escrowId' must be a string.");
+      throw new Error(
+        "Missing or invalid argument: 'escrowId' must be a string.",
+      );
     }
-    return EscrowService.getEscrowStatus(context.caller, args.escrowId);
+    return Promise.resolve(
+      EscrowService.getEscrowStatus(context.caller, args.escrowId),
+    );
   },
 };
 
@@ -23,11 +28,12 @@ export const getEscrowStatusTool: ToolDefinition = {
  */
 export const listMyEscrowsTool: ToolDefinition = {
   name: 'list_my_escrows',
-  description: 'List all active, released, or disputed escrows where the caller is either the sender or receiver. Note: The agent cannot unilaterally move funds.',
+  description:
+    'List all active, released, or disputed escrows where the caller is either the sender or receiver. Note: The agent cannot unilaterally move funds.',
   mutating: false,
   requiresConfirmation: false,
-  execute: async (args: any, context: ToolContext) => {
-    return EscrowService.listMyEscrows(context.caller);
+  execute: (args: any, context: ToolContext) => {
+    return Promise.resolve(EscrowService.listMyEscrows(context.caller));
   },
 };
 
@@ -36,14 +42,19 @@ export const listMyEscrowsTool: ToolDefinition = {
  */
 export const getReleaseHistoryTool: ToolDefinition = {
   name: 'get_release_history',
-  description: 'Get the release history for an escrow agreement. Note: The agent cannot unilaterally move funds, as all operations require cryptographic signatures from the transaction parties.',
+  description:
+    'Get the release history for an escrow agreement. Note: The agent cannot unilaterally move funds, as all operations require cryptographic signatures from the transaction parties.',
   mutating: false,
   requiresConfirmation: false,
-  execute: async (args: any, context: ToolContext) => {
+  execute: (args: any, context: ToolContext) => {
     if (!args || typeof args.escrowId !== 'string') {
-      throw new Error("Missing or invalid argument: 'escrowId' must be a string.");
+      throw new Error(
+        "Missing or invalid argument: 'escrowId' must be a string.",
+      );
     }
-    return EscrowService.getReleaseHistory(context.caller, args.escrowId);
+    return Promise.resolve(
+      EscrowService.getReleaseHistory(context.caller, args.escrowId),
+    );
   },
 };
 
@@ -52,40 +63,59 @@ export const getReleaseHistoryTool: ToolDefinition = {
  */
 export const createEscrowTool: ToolDefinition = {
   name: 'create_escrow',
-  description: 'Create a new escrow agreement. This tool prepares a structured unsigned proposal that must be signed by the parties\' user keys. Note: The agent cannot unilaterally move funds, and user keys are never sent to the service.',
+  description:
+    "Create a new escrow agreement. This tool prepares a structured unsigned proposal that must be signed by the parties' user keys. Note: The agent cannot unilaterally move funds, and user keys are never sent to the service.",
   mutating: true,
   requiresConfirmation: true,
-  execute: async (args: any, context: ToolContext) => {
+  execute: (args: any, context: ToolContext) => {
     if (!args) {
       throw new Error('Arguments are required.');
     }
 
-    const { sender, receiver, amount, assetCode, assetIssuer, confirmationToken } = args;
+    const {
+      sender,
+      receiver,
+      amount,
+      assetCode,
+      assetIssuer,
+      confirmationToken,
+    } = args;
 
     // Phase 2: Confirmation token is supplied
     if (confirmationToken !== undefined) {
       if (typeof confirmationToken !== 'string') {
         throw new Error('Confirmation token must be a string.');
       }
-      const escrow = EscrowService.confirmCreateEscrow(context.caller, confirmationToken);
-      return {
+      const escrow = EscrowService.confirmCreateEscrow(
+        context.caller,
+        confirmationToken,
+      );
+      return Promise.resolve({
         status: 'confirmed',
         escrow,
-      };
+      });
     }
 
     // Phase 1: Prepare proposal & token
-    if (typeof sender !== 'string' || typeof receiver !== 'string' || typeof amount !== 'string') {
-      throw new Error("Invalid arguments: 'sender', 'receiver', and 'amount' must be strings.");
+    if (
+      typeof sender !== 'string' ||
+      typeof receiver !== 'string' ||
+      typeof amount !== 'string'
+    ) {
+      throw new Error(
+        "Invalid arguments: 'sender', 'receiver', and 'amount' must be strings.",
+      );
     }
 
-    return EscrowService.prepareCreateEscrow(
-      context.caller,
-      sender,
-      receiver,
-      amount,
-      assetCode,
-      assetIssuer
+    return Promise.resolve(
+      EscrowService.prepareCreateEscrow(
+        context.caller,
+        sender,
+        receiver,
+        amount,
+        assetCode,
+        assetIssuer,
+      ),
     );
   },
 };
@@ -95,10 +125,11 @@ export const createEscrowTool: ToolDefinition = {
  */
 export const approveReleaseTool: ToolDefinition = {
   name: 'approve_release',
-  description: 'Approve the release of funds from an escrow. This tool prepares a structured unsigned proposal that must be signed by the parties\' user keys. Note: The agent cannot unilaterally move funds, and user keys are never sent to the service.',
+  description:
+    "Approve the release of funds from an escrow. This tool prepares a structured unsigned proposal that must be signed by the parties' user keys. Note: The agent cannot unilaterally move funds, and user keys are never sent to the service.",
   mutating: true,
   requiresConfirmation: true,
-  execute: async (args: any, context: ToolContext) => {
+  execute: (args: any, context: ToolContext) => {
     if (!args) {
       throw new Error('Arguments are required.');
     }
@@ -110,19 +141,26 @@ export const approveReleaseTool: ToolDefinition = {
       if (typeof confirmationToken !== 'string') {
         throw new Error('Confirmation token must be a string.');
       }
-      const escrow = EscrowService.confirmApproveRelease(context.caller, confirmationToken);
-      return {
+      const escrow = EscrowService.confirmApproveRelease(
+        context.caller,
+        confirmationToken,
+      );
+      return Promise.resolve({
         status: 'confirmed',
         escrow,
-      };
+      });
     }
 
     // Phase 1: Prepare proposal & token
     if (typeof escrowId !== 'string' || typeof amount !== 'string') {
-      throw new Error("Invalid arguments: 'escrowId' and 'amount' must be strings.");
+      throw new Error(
+        "Invalid arguments: 'escrowId' and 'amount' must be strings.",
+      );
     }
 
-    return EscrowService.prepareApproveRelease(context.caller, escrowId, amount);
+    return Promise.resolve(
+      EscrowService.prepareApproveRelease(context.caller, escrowId, amount),
+    );
   },
 };
 
@@ -131,10 +169,11 @@ export const approveReleaseTool: ToolDefinition = {
  */
 export const initiateDisputeTool: ToolDefinition = {
   name: 'initiate_dispute',
-  description: 'Initiate a dispute on an active escrow. This tool prepares a structured unsigned proposal that must be signed by the parties\' user keys. Note: The agent cannot unilaterally move funds, and user keys are never sent to the service.',
+  description:
+    "Initiate a dispute on an active escrow. This tool prepares a structured unsigned proposal that must be signed by the parties' user keys. Note: The agent cannot unilaterally move funds, and user keys are never sent to the service.",
   mutating: true,
   requiresConfirmation: true,
-  execute: async (args: any, context: ToolContext) => {
+  execute: (args: any, context: ToolContext) => {
     if (!args) {
       throw new Error('Arguments are required.');
     }
@@ -146,19 +185,26 @@ export const initiateDisputeTool: ToolDefinition = {
       if (typeof confirmationToken !== 'string') {
         throw new Error('Confirmation token must be a string.');
       }
-      const escrow = EscrowService.confirmInitiateDispute(context.caller, confirmationToken);
-      return {
+      const escrow = EscrowService.confirmInitiateDispute(
+        context.caller,
+        confirmationToken,
+      );
+      return Promise.resolve({
         status: 'confirmed',
         escrow,
-      };
+      });
     }
 
     // Phase 1: Prepare proposal & token
     if (typeof escrowId !== 'string' || typeof reason !== 'string') {
-      throw new Error("Invalid arguments: 'escrowId' and 'reason' must be strings.");
+      throw new Error(
+        "Invalid arguments: 'escrowId' and 'reason' must be strings.",
+      );
     }
 
-    return EscrowService.prepareInitiateDispute(context.caller, escrowId, reason);
+    return Promise.resolve(
+      EscrowService.prepareInitiateDispute(context.caller, escrowId, reason),
+    );
   },
 };
 

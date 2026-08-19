@@ -14,7 +14,7 @@ interface StoredToken extends RefreshTokenRecord {
 class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
   private rows = new Map<string, StoredToken>();
 
-  async create(record: {
+  create(record: {
     id: string;
     userId: string;
     tokenHash: string;
@@ -25,33 +25,36 @@ class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
       revokedAt: null,
       replacedByTokenId: null,
     });
+    return Promise.resolve();
   }
 
-  async findByHash(tokenHash: string): Promise<RefreshTokenRecord | null> {
+  findByHash(tokenHash: string): Promise<RefreshTokenRecord | null> {
     for (const row of this.rows.values()) {
-      if (row.tokenHash === tokenHash) return row;
+      if (row.tokenHash === tokenHash) return Promise.resolve(row);
     }
-    return null;
+    return Promise.resolve(null);
   }
 
-  async revoke(id: string, replacedByTokenId?: string): Promise<void> {
+  revoke(id: string, replacedByTokenId?: string): Promise<void> {
     const row = this.rows.get(id);
-    if (!row) return;
+    if (!row) return Promise.resolve();
     row.revokedAt = new Date();
     if (replacedByTokenId) row.replacedByTokenId = replacedByTokenId;
+    return Promise.resolve();
   }
 
-  async revokeAllForUser(userId: string): Promise<void> {
+  revokeAllForUser(userId: string): Promise<void> {
     for (const row of this.rows.values()) {
       if (row.userId === userId) row.revokedAt = new Date();
     }
+    return Promise.resolve();
   }
 }
 
 class InMemoryUserDirectory implements UserDirectory {
   constructor(private readonly users: Map<string, AuthenticatedUser>) {}
-  async getById(userId: string): Promise<AuthenticatedUser | null> {
-    return this.users.get(userId) ?? null;
+  getById(userId: string): Promise<AuthenticatedUser | null> {
+    return Promise.resolve(this.users.get(userId) ?? null);
   }
 }
 
