@@ -11,28 +11,34 @@ import { Server } from 'http';
 // Load environment variables
 dotenv.config();
 
-// Export modules
-export * from './blockchain';
-export * from './agent';
 import { createApp } from './app';
 import { pool } from './lib/db';
 import { closeRedis } from './lib/redis';
 import { logger } from './lib/logger';
 
-// Export blockchain module
+// Export modules
 export * from './blockchain';
+export * from './agent';
 export { createApp } from './app';
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 async function startup() {
+  // No `await` occurs below, but this must stay `async` so that a
+  // synchronous throw anywhere in this function (e.g. from
+  // PromptManager.initialize()) becomes a rejected promise, caught by
+  // startup().catch(...) below, instead of an uncaught exception.
+  await Promise.resolve();
+
   console.log('🚀 Arbitra AI Agent');
   console.log(`Network: ${process.env.STELLAR_NETWORK || 'testnet'}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 
   // Initialize prompt manager
   PromptManager.initialize();
-  console.log(`✅ Prompts initialized (v${PromptManager.getCurrentSystemPromptVersion()})`);
+  console.log(
+    `✅ Prompts initialized (v${PromptManager.getCurrentSystemPromptVersion()})`,
+  );
 
   // Verify critical configuration
   const network = process.env.STELLAR_NETWORK || 'testnet';

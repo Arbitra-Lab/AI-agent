@@ -1,13 +1,16 @@
 import Redis from 'ioredis';
 import { authConfig } from '../config';
+import { logger } from './logger';
 
 let client: Redis | undefined;
 
 /**
- * Lazy singleton Redis client for rate limiting. `maxRetriesPerRequest: 1`
- * and a short `commandTimeout` are deliberate: the rate limiter must fail
- * fast into its closed-by-default path on an outage rather than hang the
- * request queue waiting on ioredis's own retry logic.
+ * Lazy singleton Redis client, shared by the rate limiter
+ * (src/auth/rateLimiters.ts) and the readiness check / graceful shutdown
+ * below. `maxRetriesPerRequest: 1` and a short `commandTimeout` are
+ * deliberate: callers must fail fast into their own fallback (the rate
+ * limiter's closed-by-default path, or a 503 from /ready) rather than hang
+ * waiting on ioredis's own retry logic.
  */
 export function getRedisClient(): Redis {
   if (!client) {
@@ -16,39 +19,11 @@ export function getRedisClient(): Redis {
       commandTimeout: 1000,
       lazyConnect: true,
     });
-    client.on('error', () => {
-      // Swallow — callers see failures via rejected command promises and
-      // must handle them (fail closed). A dangling 'error' listener would
-      // otherwise crash the process on every reconnect attempt.
-import Redis from "ioredis";
-
-/**
- * Minimal Redis connection used only for readiness checks in this issue.
- *
- * Deliberately narrow scope: connection lifecycle + a ping, nothing more.
- * A full client with caching helpers is tracked separately in issue #12
- * ("Redis client with connection lifecycle and caching helpers") - when
- * that lands it should likely replace this module rather than duplicate it.
- */
-let client: Redis | null = null;
-
-function getRedisClient(): Redis {
-  if (!client) {
-    client = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
-      // Fail fast for readiness checks instead of buffering commands while
-      // disconnected, and don't let ioredis retry forever in the background.
-      lazyConnect: true,
-      maxRetriesPerRequest: 1,
-      retryStrategy: () => null,
-      enableOfflineQueue: false,
-    });
-
-    client.on("error", (err) => {
+    client.on('error', (err) => {
       // ioredis emits 'error' on connection issues; without a listener this
-      // would crash the process. Readiness checks below surface the actual
-      // failure to the caller.
-      // eslint-disable-next-line no-console
-      console.error("[redis] connection error", err.message);
+      // would crash the process. Callers see failures via rejected command
+      // promises and must handle them (fail closed).
+      logger.error(`[redis] connection error: ${err.message}`);
     });
   }
   return client;
@@ -62,16 +37,16 @@ function getRedisClient(): Redis {
 export async function pingRedis(timeoutMs = 2_000): Promise<boolean> {
   const redis = getRedisClient();
   try {
-    if (redis.status !== "ready" && redis.status !== "connecting") {
+    if (redis.status !== 'ready' && redis.status !== 'connecting') {
       await redis.connect();
     }
     const result = await Promise.race([
       redis.ping(),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("redis ping timeout")), timeoutMs)
+        setTimeout(() => reject(new Error('redis ping timeout')), timeoutMs),
       ),
     ]);
-    return result === "PONG";
+    return result === 'PONG';
   } catch {
     return false;
   }
@@ -81,6 +56,6 @@ export async function pingRedis(timeoutMs = 2_000): Promise<boolean> {
 export async function closeRedis(): Promise<void> {
   if (client) {
     await client.quit().catch(() => client?.disconnect());
-    client = null;
+    client = undefined;
   }
 }
