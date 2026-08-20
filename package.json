@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Arbitra AI Agent — on-chain arbitration and escrow protocol",
   "main": "dist/index.js",
+  "packageManager": "pnpm@10.10.0",
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx db/migrate.ts",
