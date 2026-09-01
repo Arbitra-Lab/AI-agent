@@ -19,7 +19,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.113.0",
+    "@anthropic-ai/sdk": "^0.122.0",
     "@stellar/stellar-sdk": "^16.0.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
