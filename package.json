@@ -1,7 +1,7 @@
 {
   "name": "arbitra-ai-agent",
   "version": "0.1.0",
-  "description": "Arbitra AI Agent — on-chain arbitration and escrow protocol",
+  "description": "Arbitra AI Agent \u2014 on-chain arbitration and escrow protocol",
   "main": "dist/index.js",
   "packageManager": "pnpm@10.10.0",
   "scripts": {
@@ -10,9 +10,9 @@
     "db:rollback": "tsx db/rollback.ts",
     "db:seed": "tsx db/seeds/index.ts",
     "db:studio": "drizzle-kit studio",
-    "build": "tsc",
-    "dev": "tsx watch src/index.ts",
-    "dev:server": "tsx watch server.ts",
+    "build": "node init && tsc",
+    "dev": "node init && tsx watch src/index.ts",
+    "dev:server": "node init && tsx watch server.ts",
     "test": "jest",
     "lint": "eslint .",
     "format": "prettier --write .",
