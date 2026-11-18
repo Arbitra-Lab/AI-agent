@@ -1,7 +1,7 @@
 {
   "name": "arbitra-ai-agent",
   "version": "0.1.0",
-  "description": "Arbitra AI Agent — on-chain arbitration and escrow protocol",
+  "description": "Arbitra AI Agent \u2014 on-chain arbitration and escrow protocol",
   "main": "dist/index.js",
   "packageManager": "pnpm@10.10.0",
   "scripts": {
